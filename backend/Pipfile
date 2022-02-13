@@ -8,6 +8,8 @@ Flask = "*"
 Flask-SQLAlchemy = "*"
 Flask-Login = "*"
 psycopg2-binary = "*"
+email-validator = "*"
+argon2-cffi = "*"
 
 [dev-packages]
 

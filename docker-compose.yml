@@ -10,12 +10,7 @@ services:
       - "./backend:/backend"
     ports:
       - "5000:5000"
-    environment:
-      - POSTGRES_HOST=database
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+    env_file: config/.flask.env
 
   database:
     container_name: pg_database
@@ -26,10 +21,7 @@ services:
       - "pg_data:/var/lib/postgresql/data"
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+    env_file: config/.postgres.env
 
 volumes:
   pg_data:

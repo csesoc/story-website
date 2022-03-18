@@ -10,6 +10,8 @@ Flask-Login = "*"
 psycopg2-binary = "*"
 email-validator = "*"
 argon2-cffi = "*"
+flask-jwt-extended = "*"
+redis = "*"
 
 [dev-packages]
 

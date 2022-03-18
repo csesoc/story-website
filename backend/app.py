@@ -1,10 +1,10 @@
 import os
 
+from datetime import timedelta
 from flask import Flask, json
-from flask_login import LoginManager
 from werkzeug.exceptions import HTTPException
 
-from auth.user import User
+from auth.jwt import jwt, update_token
 from routes.advent import advent
 from routes.auth import auth
 
@@ -23,19 +23,24 @@ def handle_exception(error):
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = os.environ["FLASK_SECRET"]
+
+    app.config["JWT_SECRET_KEY"] = os.environ["FLASK_SECRET"]
+
+    # TODO: set JWT_COOKIE_SECURE and JWT_COOKIE_SAMESITE to True
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+    app.config["JWT_BLACKLIST_ENABLED"] = True
+    app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["refresh"]
+    app.config["JWT_COOKIE_CSRF_PROTECT"] = True
+    app.config["JWT_TOKEN_LOCATION"] = "cookies"
+
+    app.after_request(update_token)
+
+    jwt.init_app(app)
 
     app.register_blueprint(advent, url_prefix="/advent")
     app.register_blueprint(auth, url_prefix="/auth")
 
     app.register_error_handler(HTTPException, handle_exception)
-
-    manager = LoginManager()
-    manager.init_app(app)
-
-    @manager.user_loader
-    def load_user(user_id):
-        return User.get(user_id)
 
     return app
 

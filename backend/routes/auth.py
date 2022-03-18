@@ -1,91 +1,42 @@
-from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
-from email_validator import validate_email, EmailNotValidError
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies
 
-from common.database import get_connection
-from common.exceptions import AuthError
+from auth.user import User
 
 # Constants
 
-hasher = PasswordHasher(
-    time_cost=2,
-    memory_cost=2**15,
-    parallelism=1
-)
-
 auth = Blueprint("auth", __name__)
-
-# Helper functions
-
-def email_exists(cursor, email):
-    cursor.execute("SELECT * FROM users WHERE email = %s",
-                   (email,))
-
-    results = cursor.fetchall()
-    return results != []
 
 # Routes
 
 @auth.route("/login", methods=["POST"])
 def login():
-    response = request.get_json()
+    json = request.get_json()
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    user = User.login(json["email"], json["password"])
+    token = create_access_token(identity=user)
 
-    # Verify email provided is a valid address
-    try:
-        normalised = validate_email(response["email"])
-    except EmailNotValidError as e:
-        raise AuthError(description="Invalid email") from e
+    response = jsonify({})
+    set_access_cookies(response, token)
 
-    # Check if email is already in database or not
-    if not email_exists(cursor, normalised.email):
-        raise AuthError(description="Email or password is incorrect")
-
-    cursor.execute("SELECT password FROM users WHERE email = %s",
-                   (normalised.email,))
-    db_password = cursor.fetchone()[0]
-
-    # Incorrect password
-    try:
-        hasher.verify(db_password, response["password"])
-    except VerifyMismatchError as e:
-        raise AuthError(description="Email or password is incorrect") from e
-
-    cursor.close()
-    conn.close()
-
-    # TODO: return a proper success message
-    return "{}"
+    return response, 200
 
 @auth.route("/register", methods=["POST"])
 def register():
-    response = request.get_json()
+    json = request.get_json()
     
-    conn = get_connection()
-    cursor = conn.cursor()
+    user = User.register(json["email"], json["password"])
+    token = create_access_token(identity=user)
 
-    # Verify email provided is a valid address
-    try:
-        normalised = validate_email(response["email"])
-    except EmailNotValidError as e:
-        raise AuthError(description="Invalid email") from e
+    response = jsonify({})
+    set_access_cookies(response, token)
 
-    # Check if email is already in database or not
-    if email_exists(cursor, normalised.email):
-        raise AuthError(description="Email already registered")
+    return response, 200
 
-    # Hash password
-    hashed = hasher.hash(response["password"])
+@auth.route("/logout", methods=["DELETE"])
+@jwt_required()
+def logout():
+    response = jsonify({})
+    unset_jwt_cookies(response)
 
-    cursor.execute("INSERT INTO users (email, password) VALUES (%s, %s)",
-                   (normalised.email, hashed))
-    conn.commit()
-
-    cursor.close()
-    conn.close()
-
-    # TODO: return a proper success message
-    return "{}"
+    return response, 200

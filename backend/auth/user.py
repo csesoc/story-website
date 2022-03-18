@@ -1,10 +1,9 @@
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError
 from email_validator import validate_email, EmailNotValidError
-from flask_login import UserMixin
-from backend.common.exceptions import AuthError, InvalidError
 
 from common.database import get_connection
+from common.exceptions import AuthError, InvalidError
 
 hasher = PasswordHasher(
     time_cost=2,
@@ -12,9 +11,8 @@ hasher = PasswordHasher(
     parallelism=1
 )
 
-class User(UserMixin):
+class User:
     # Private helper methods
-
     @staticmethod
     def _email_exists(cursor, email):
         cursor.execute("SELECT * FROM users WHERE email = %s",
@@ -29,13 +27,12 @@ class User(UserMixin):
                        (email, password))
         conn.commit()
 
-        cursor.execute("SELECT uid FROM users WHERE email = %s", (email))
+        cursor.execute("SELECT uid FROM users WHERE email = %s", (email,))
         id = cursor.fetchone()[0]
 
         return id
 
     # Constructor methods
-
     def __init__(self, email, password, id):
         self.email = email
         self.password = password
@@ -73,11 +70,12 @@ class User(UserMixin):
             raise AuthError(description="Invalid email or password") from e
 
         cursor.execute("SELECT * FROM users WHERE email = %s", (normalised,))
-        _, hashed, id = cursor.fetchone()
+        result = cursor.fetchone()
 
         try:
+            id, _, hashed = result
             hasher.verify(hashed, password)
-        except VerificationError as e:
+        except (TypeError, VerificationError) as e:
             raise AuthError(description="Invalid email or password") from e
 
         cursor.close()
@@ -90,7 +88,7 @@ class User(UserMixin):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM users WHERE uid = %d", (id,))
+        cursor.execute("SELECT * FROM users WHERE uid = %s", (id,))
         fetched = cursor.fetchall()
 
         if fetched == []:
@@ -102,17 +100,3 @@ class User(UserMixin):
         conn.close()
 
         return User(email, password, id)
-
-    # Methods from UserMixin
-
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return True
-
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return self.id

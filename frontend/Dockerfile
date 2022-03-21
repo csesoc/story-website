@@ -3,6 +3,7 @@ FROM node:17.6-alpine
 
 # Setting working directory
 WORKDIR /frontend
+RUN chown -R node:node /frontend
 
 # Cache and Install dependnecies
 COPY --chown=node:node package.json .

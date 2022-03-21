@@ -8,7 +8,6 @@ const getCookieValue = (name: string) => (
   document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || ''
 );
 
-// TODO: implement login page
 const Login: React.FC<{}> = () => {
   const navigate = useNavigate();
 

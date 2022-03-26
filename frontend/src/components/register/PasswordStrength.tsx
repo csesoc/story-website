@@ -31,7 +31,7 @@ const PasswordStrength: React.FC<Strength> = ({ strength }) => {
       <PasswordContainer>
         <Row className="h-100">
           {range(1, 5).map(n => (
-            <Col style={{ backgroundColor: strength >= n ? selectColour(strength) : "lightgray" }}></Col>
+            <Col key={n} style={{ backgroundColor: strength >= n ? selectColour(strength) : "lightgray" }}></Col>
           ))}
         </Row>
       </PasswordContainer>

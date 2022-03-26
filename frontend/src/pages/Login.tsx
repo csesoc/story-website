@@ -18,6 +18,8 @@ const Login: React.FC<{}> = () => {
     const result = await fetch(`${BACKEND_URI}/auth/login`, {
       method: "POST",
       headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
         "X-CSRF-TOKEN": getCookieValue("csrf_access_token")
       },
       body: JSON.stringify({
@@ -28,11 +30,10 @@ const Login: React.FC<{}> = () => {
 
     if (!result.ok) {
 			const message = `An error has occured: ${result.status}`;
-      console.log("Here!");
 			throw new Error(message);
-		}
-
-    navigate("/");
+		} else {
+      navigate("/");
+    }
   };
 
   return (
@@ -52,7 +53,7 @@ const Login: React.FC<{}> = () => {
             type="password"
             onChange={event => setPassword(event.target.value)} />
         </Form.Group>
-        <Button variant="primary" type="submit" onClick={() => login()}>
+        <Button variant="primary" onClick={() => login()}>
           Submit
         </Button>
       </Form>

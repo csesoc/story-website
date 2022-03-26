@@ -23,6 +23,8 @@ const options = {
 zxcvbnOptions.setOptions(options);
 
 const Register: React.FC<{}> = () => {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -45,11 +47,22 @@ const Register: React.FC<{}> = () => {
   const register = async () => {
     const result = await fetch(`${BACKEND_URI}/auth/register`, {
       method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         "email": email,
         "password": password
       })
     });
+
+    if (!result.ok) {
+      const message = `An error has occured: ${result.status}`;
+			throw new Error(message);
+    } else {
+      navigate("/");
+    }
   };
 
   return (
@@ -88,7 +101,6 @@ const Register: React.FC<{}> = () => {
         </Form.Group>
         <Button
           variant="primary"
-          type="submit"
           onClick={() => register()}
           disabled={!canSubmit()}>
           Submit

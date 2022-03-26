@@ -2,6 +2,7 @@ import os
 
 from datetime import timedelta
 from flask import Flask, json
+from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
 from auth.jwt import jwt, update_token
@@ -23,6 +24,7 @@ def handle_exception(error):
 
 def create_app():
     app = Flask(__name__)
+    cors = CORS(app)
 
     app.config["JWT_SECRET_KEY"] = os.environ["FLASK_SECRET"]
 

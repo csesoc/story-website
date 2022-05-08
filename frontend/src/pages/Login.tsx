@@ -14,6 +14,10 @@ const Login: React.FC<{}> = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const validEmailFormat = () => {
+    return /^([A-Za-z0-9_\-.])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,})$/.test(email);
+  };
+
   const login = async () => {
     const result = await fetch(`${BACKEND_URI}/auth/login`, {
       method: "POST",
@@ -53,7 +57,10 @@ const Login: React.FC<{}> = () => {
             type="password"
             onChange={event => setPassword(event.target.value)} />
         </Form.Group>
-        <Button variant="primary" onClick={() => login()}>
+        <Button
+          variant="primary"
+          onClick={() => login()}
+          disabled={!validEmailFormat() || password === ""}>
           Submit
         </Button>
       </Form>

@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies
+from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
 
 from auth.user import User
+from common.exceptions import AuthError
 
 # Constants
 
@@ -32,6 +33,15 @@ def register():
     set_access_cookies(response, token)
 
     return response, 200
+
+@auth.route("/verify", methods=["GET"])
+def verify():
+    try:
+        verify_jwt_in_request()
+    except:
+        raise AuthError("Not logged in")
+
+    return jsonify({}), 200
 
 @auth.route("/logout", methods=["DELETE"])
 @jwt_required()

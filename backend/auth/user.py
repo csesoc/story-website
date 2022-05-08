@@ -3,7 +3,7 @@ from argon2.exceptions import VerificationError
 from email_validator import validate_email, EmailNotValidError
 
 from common.database import get_connection
-from common.exceptions import AuthError, InvalidError
+from common.exceptions import AuthError, InvalidError, RequestError
 
 hasher = PasswordHasher(
     time_cost=2,
@@ -46,10 +46,10 @@ class User:
         try:
             normalised = validate_email(email).email
         except EmailNotValidError as e:
-            raise AuthError(description="Invalid email") from e
+            raise RequestError(description="Invalid email") from e
 
         if User._email_exists(cursor, normalised):
-            raise AuthError(description="Email already registered")
+            raise RequestError(description="Email already registered")
         
         hashed = hasher.hash(password)
         new_id = User._add_user(conn, cursor, normalised, hashed)

@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@types/react": "17.0.45",
-    "@types/react-dom": "17.0.16",
+    "@types/react-dom": "17.0.17",
     "@types/styled-components": "5.1.25",
     "@zxcvbn-ts/core": "2.0.1",
     "@zxcvbn-ts/language-common": "2.0.1",

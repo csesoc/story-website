@@ -6,7 +6,7 @@ from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 
 from auth.jwt import jwt, update_token
-from routes.advent import advent
+from routes.puzzle import puzzle
 from routes.auth import auth
 
 def handle_exception(error):
@@ -39,7 +39,7 @@ def create_app():
 
     jwt.init_app(app)
 
-    app.register_blueprint(advent, url_prefix="/advent")
+    app.register_blueprint(puzzle, url_prefix="/advent")
     app.register_blueprint(auth, url_prefix="/auth")
 
     app.register_error_handler(HTTPException, handle_exception)
@@ -48,4 +48,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", port=5001)

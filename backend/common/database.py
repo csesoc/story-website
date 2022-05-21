@@ -21,3 +21,9 @@ def get_connection():
 
 conn = get_connection()
 cur = conn.cursor()
+
+query = 'select * from Users;'
+cur.execute(query)
+
+
+

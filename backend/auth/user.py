@@ -15,6 +15,7 @@ class User:
     # Private helper methods
     @staticmethod
     def _email_exists(cursor, email):
+        """Checks if an email exists in the database."""
         cursor.execute("SELECT * FROM users WHERE email = %s",
                        (email,))
 
@@ -22,9 +23,10 @@ class User:
         return results != []
 
     @staticmethod
-    def _add_user(conn, cursor, email, password):
-        cursor.execute("INSERT INTO users (email, password) VALUES (%s, %s)",
-                       (email, password))
+    def _add_user(conn, cursor, email, username, password):
+        """Given the details of a user, adds them to the database."""
+        cursor.execute("INSERT INTO users (email, username, password) VALUES (%s, %s, %s)",
+                       (email, username, password))
         conn.commit()
 
         cursor.execute("SELECT uid FROM users WHERE email = %s", (email,))
@@ -39,7 +41,10 @@ class User:
         self.id = id
 
     @staticmethod
-    def register(email, password):
+    def register(email, username, password):
+        # TODO: update register function once we get custom email
+        """Given an email, username and password, registers the user in the
+           database."""
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -52,7 +57,7 @@ class User:
             raise RequestError(description="Email already registered")
         
         hashed = hasher.hash(password)
-        new_id = User._add_user(conn, cursor, normalised, hashed)
+        new_id = User._add_user(conn, cursor, normalised, username, hashed)
 
         cursor.close()
         conn.close()

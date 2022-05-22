@@ -8,7 +8,8 @@ from common.exceptions import AuthError
 
 auth = Blueprint("auth", __name__)
 
-# Routes
+# Routes (fairly temporary here)
+# TODO: update once CSESoc federated auth is set up, do proper research
 
 @auth.route("/login", methods=["POST"])
 def login():
@@ -26,7 +27,7 @@ def login():
 def register():
     json = request.get_json()
     
-    user = User.register(json["email"], json["password"])
+    user = User.register(json["email"], json["username"], json["password"])
     token = create_access_token(identity=user)
 
     response = jsonify({})
@@ -34,8 +35,13 @@ def register():
 
     return response, 200
 
-@auth.route("/verify", methods=["GET"])
-def verify():
+@auth.route("/register/verify", methods=["POST"])
+def register_verify():
+    # TODO: fill in once we get custom email address
+    pass
+
+@auth.route("/verify_token", methods=["GET"])
+def verify_token():
     try:
         verify_jwt_in_request()
     except:

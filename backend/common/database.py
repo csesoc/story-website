@@ -1,5 +1,6 @@
 import os
 import psycopg2
+import re
 
 user = os.environ["POSTGRES_USER"]
 password = os.environ["POSTGRES_PASSWORD"]
@@ -17,3 +18,12 @@ def get_connection():
     )
 
     return conn
+
+conn = get_connection()
+cur = conn.cursor()
+
+query = 'select * from Users;'
+cur.execute(query)
+
+
+

@@ -1,0 +1,38 @@
+html, body {
+  font-size: 20px;
+}
+
+.horizontalFlex {
+  display: flex;
+  flex-direction: row;
+}
+
+.csesocLogo {
+  height: 60px;
+  padding: 16px;
+}
+
+.blackMain {
+  background-color: black;
+  height: 100%;
+}
+
+.whiteMain {
+  background-color: white;
+  height: 100%;
+}
+
+.navElem {
+  flex: 1;
+  color: rgb(2,94,23);
+  margin: 2px 6px 2px 6px;
+  padding: 7px; 
+  text-decoration: none;
+  text-align: center;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.navElem:hover {
+  color: rgb(122, 255, 153);
+}

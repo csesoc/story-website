@@ -16,7 +16,7 @@ const Header: React.FC<{}> = () => {
         <div className={styles.horizontalFlex}>
           <a className={styles.navElem} href="/2022/about">[About]</a> 
           <a className={styles.navElem} href="/2022/auth/login">[Log In]</a> 
-          <a className={styles.navElem} href="/2022/">[Calendar]</a> 
+          <a className={styles.navElem} href="/2022/calendar">[Calendar]</a> 
           <a className={styles.navElem} href="/2022/leaderboard">[Leaderboard]</a> 
           <a className={styles.navElem} href="/2022/stats">[Stats]</a> 
           <div className={styles.navYear}>

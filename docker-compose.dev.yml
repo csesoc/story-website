@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  backend:
+    build:
+      target: dev
+    volumes:
+      - "./backend:/backend"

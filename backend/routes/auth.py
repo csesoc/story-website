@@ -25,6 +25,7 @@ def login():
 
 @auth.route("/register", methods=["POST"])
 def register():
+    # TODO: convert to email verification once we get email address
     json = request.get_json()
     
     user = User.register(json["email"], json["username"], json["password"])

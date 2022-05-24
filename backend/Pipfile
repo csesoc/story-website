@@ -13,8 +13,11 @@ argon2-cffi = "*"
 flask-jwt-extended = "*"
 redis = "*"
 flask-cors = "*"
+flask-mail = "*"
 
 [dev-packages]
+pytest = "*"
+requests = "*"
 
 [requires]
 python_version = "3.8"

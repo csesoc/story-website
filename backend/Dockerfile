@@ -1,5 +1,7 @@
+## BASE BUILD THAT BOTH DEV AND PROD INHERIT FROM
+
 # pull official base image
-FROM python:3.8.10-slim-buster
+FROM python:3.8.10-slim-buster AS base
 
 # set work directory
 WORKDIR /backend
@@ -10,11 +12,28 @@ ENV PYTHONUNBUFFERED 1
 
 COPY Pipfile* /backend/
 
+EXPOSE 5001
+
+## DEV BUILD
+
+FROM base as dev
+
+ENV FLASK_ENV development
+
+RUN pip install pipenv
+RUN pipenv lock --dev -r > requirements.txt
+RUN pip uninstall --yes pipenv
+RUN pip install -r requirements.txt
+
+CMD [ "python", "app.py" ]
+
+## PROD BUILD
+
+FROM base as prod
+
 RUN pip install pipenv
 RUN pipenv lock -r > requirements.txt
 RUN pip uninstall --yes pipenv
 RUN pip install -r requirements.txt
-
-EXPOSE 5001
 
 CMD [ "python", "app.py" ]

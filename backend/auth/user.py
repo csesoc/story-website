@@ -16,7 +16,7 @@ class User:
     @staticmethod
     def _email_exists(cursor, email):
         """Checks if an email exists in the database."""
-        cursor.execute("SELECT * FROM users WHERE email = %s",
+        cursor.execute("SELECT * FROM Users WHERE email = %s",
                        (email,))
 
         results = cursor.fetchall()
@@ -25,11 +25,11 @@ class User:
     @staticmethod
     def _add_user(conn, cursor, email, username, password):
         """Given the details of a user, adds them to the database."""
-        cursor.execute("INSERT INTO users (email, username, password) VALUES (%s, %s, %s)",
+        cursor.execute("INSERT INTO Users (email, username, password, numStars, score) VALUES (%s, %s, %s, 0, 0)",
                        (email, username, password))
         conn.commit()
 
-        cursor.execute("SELECT uid FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT uid FROM Users WHERE email = %s", (email,))
         id = cursor.fetchone()[0]
 
         return id
@@ -66,6 +66,7 @@ class User:
 
     @staticmethod
     def login(email, password):
+        """Logs user in with their credentials (currently email and password)."""
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -74,7 +75,7 @@ class User:
         except EmailNotValidError as e:
             raise AuthError(description="Invalid email or password") from e
 
-        cursor.execute("SELECT * FROM users WHERE email = %s", (normalised,))
+        cursor.execute("SELECT * FROM Users WHERE email = %s", (normalised,))
         result = cursor.fetchone()
 
         try:
@@ -90,10 +91,12 @@ class User:
 
     @staticmethod
     def get(id):
+        # TODO: update with new DB schema
+        """Given a user's ID, fetches all of their information from the database."""
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM users WHERE uid = %s", (id,))
+        cursor.execute("SELECT * FROM Users WHERE uid = %s", (id,))
         fetched = cursor.fetchall()
 
         if fetched == []:

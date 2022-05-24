@@ -1,4 +1,4 @@
-from advent.day import Day
+from puzzles.day import Day
 
 # TODO: change to actual implementation
 class Day1(Day):

@@ -1,3 +1,8 @@
+## GENERAL COMMANDS
+
+destroy:
+	docker-compose down -v
+
 ## DEVELOPMENT MODE
 
 build-dev:
@@ -13,9 +18,6 @@ build:
 
 run:
 	docker-compose up -d
-
-stop:
-	docker-compose down
 
 restart:
 	docker-compose down -v

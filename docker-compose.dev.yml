@@ -6,3 +6,11 @@ services:
       target: dev
     volumes:
       - "./backend:/backend"
+    
+  frontend:
+    build:
+      target: dev
+    volumes:
+      - "./frontend:/frontend"
+      - "/frontend/node_modules"
+    env_file: config/.react.dev.env

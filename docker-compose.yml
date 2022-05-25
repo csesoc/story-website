@@ -24,9 +24,6 @@ services:
   frontend:
     container_name: react_frontend
     build: ./frontend
-    volumes:
-      - "./frontend:/frontend"
-      - "/frontend/node_modules"
     ports:
       - "3000:3000"
     env_file: config/.react.env

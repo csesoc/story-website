@@ -12,18 +12,17 @@ ENV PYTHONUNBUFFERED 1
 
 COPY Pipfile* /backend/
 
+RUN pip install pipenv
+
 EXPOSE 5001
 
 ## DEV BUILD
 
 FROM base as dev
 
-ENV FLASK_ENV development
-
-RUN pip install pipenv
-RUN pipenv lock --dev -r > requirements.txt
-RUN pip uninstall --yes pipenv
-RUN pip install -r requirements.txt
+RUN pipenv lock --dev --requirements > requirements.txt \
+    && pip uninstall --yes pipenv \
+    && pip install -r requirements.txt
 
 CMD [ "python", "app.py" ]
 
@@ -31,9 +30,8 @@ CMD [ "python", "app.py" ]
 
 FROM base as prod
 
-RUN pip install pipenv
-RUN pipenv lock -r > requirements.txt
-RUN pip uninstall --yes pipenv
-RUN pip install -r requirements.txt
+RUN pipenv lock --requirements > requirements.txt \
+    && pip uninstall --yes pipenv \
+    && pip install -r requirements.txt
 
-CMD [ "python", "app.py" ]
+CMD [ "gunicorn", "--bind", "0.0.0.0:5001", "app:app" ]

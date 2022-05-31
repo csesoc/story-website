@@ -24,6 +24,8 @@ RUN pipenv lock --dev --requirements > requirements.txt \
     && pip uninstall --yes pipenv \
     && pip install -r requirements.txt
 
+ENV FLASK_ENV development
+
 CMD [ "python", "app.py" ]
 
 ## PROD BUILD

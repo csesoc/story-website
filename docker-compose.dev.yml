@@ -4,13 +4,33 @@ services:
   backend:
     build:
       target: dev
+    depends_on:
+      - database_testing
     volumes:
       - "./backend:/backend"
+    env_file: config/.flask.dev.env
     
   frontend:
     build:
       target: dev
+    depends_on:
+      - backend
+      - database_testing
     volumes:
       - "./frontend:/frontend"
       - "/frontend/node_modules"
     env_file: config/.react.dev.env
+
+  database_testing:
+    container_name: pg_database_testing
+    image: postgres
+    restart: always
+    volumes:
+      - "./database/setup.sql:/docker-entrypoint-initdb.d/setup.sql"
+      - "pg_data_testing:/var/lib/postgresql/data"
+    ports:
+      - "2345:5432"
+    env_file: config/.postgres.dev.env
+
+volumes:
+  pg_data_testing:

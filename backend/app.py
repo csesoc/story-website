@@ -16,7 +16,7 @@ def handle_exception(error):
     response.data = json.dumps({
         "code": error.code,
         "name": error.name,
-        "description": error.description
+        "message": error.description
     })
 
     response.content_type = "application/json"

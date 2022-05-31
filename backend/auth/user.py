@@ -23,6 +23,14 @@ class User:
         return results != []
 
     @staticmethod
+    def _username_exists(cursor, username):
+        """Checks if a username is already used."""
+        cursor.execute("SELECT * FROM Users WHERE username = %s", (username,))
+
+        results = cursor.fetchall()
+        return results != []
+
+    @staticmethod
     def _add_user(conn, cursor, email, username, password):
         """Given the details of a user, adds them to the database."""
         cursor.execute("INSERT INTO Users (email, username, password, numStars, score) VALUES (%s, %s, %s, 0, 0)",
@@ -40,6 +48,7 @@ class User:
         self.password = password
         self.id = id
 
+    # API-facing methods
     @staticmethod
     def register(email, username, password):
         # TODO: update register function once we get custom email
@@ -55,6 +64,9 @@ class User:
 
         if User._email_exists(cursor, normalised):
             raise RequestError(description="Email already registered")
+
+        if User._username_exists(cursor, username):
+            raise RequestError(description="Username already used")
         
         hashed = hasher.hash(password)
         new_id = User._add_user(conn, cursor, normalised, username, hashed)
@@ -102,7 +114,7 @@ class User:
         if fetched == []:
             raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-        email, password, _ = fetched[0]
+        email, _, password, _, _ = fetched[0]
 
         cursor.close()
         conn.close()

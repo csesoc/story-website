@@ -31,8 +31,9 @@ CREATE TABLE Competitions (
 DROP TABLE IF EXISTS Inputs;
 CREATE TABLE Inputs (
     iid SERIAL PRIMARY KEY,
-    qid FOREIGN KEY references Questions(qid),
-    solution TEXT NOT NULL
+    qid INTEGER,
+    solution TEXT NOT NULL,
+    FOREIGN KEY (qid) REFERENCES Questions(qid)
 );
 
 DROP TABLE IF EXISTS Solves;

@@ -1,8 +1,3 @@
-## GENERAL COMMANDS
-
-destroy:
-	docker-compose down -v
-
 ## DEVELOPMENT MODE
 
 build-dev:
@@ -10,6 +5,9 @@ build-dev:
 
 dev:
 	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+destroy-dev:
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml down -v
 
 ## PRODUCTION MODE
 

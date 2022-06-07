@@ -193,3 +193,12 @@ def updateUsername(username, uid):
     cur.execute(query)
     conn.commit()
 
+# DO NOT EVER EXECUTE THIS FUNCTION BRUH
+def dropDatabase():
+    query = f"""
+        SELECT 'DROP TABLE IF EXISTS "' || tablename || '" CASCADE;' 
+        from
+        pg_tables WHERE schemaname = 'advent';
+    """
+    cur.execute(query)
+    conn.commit()

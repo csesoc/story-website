@@ -1,9 +1,13 @@
+from datetime import timedelta
+import random
+
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError
 from email_validator import validate_email, EmailNotValidError
 
 from common.database import get_connection
 from common.exceptions import AuthError, InvalidError, RequestError
+from common.redis import cache
 
 hasher = PasswordHasher(
     time_cost=2,
@@ -12,6 +16,8 @@ hasher = PasswordHasher(
 )
 
 class User:
+    # TODO: change all these functions once database functions are merged
+
     # Private helper methods
     @staticmethod
     def _email_exists(cursor, email):
@@ -51,9 +57,9 @@ class User:
     # API-facing methods
     @staticmethod
     def register(email, username, password):
-        # TODO: update register function once we get custom email
-        """Given an email, username and password, registers the user in the
-           database."""
+        """Given an email, username and password, creates a verification code
+           for that user in Redis such that we can verify that user's email."""
+        # Error handling
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -69,12 +75,29 @@ class User:
             raise RequestError(description="Username already used")
         
         hashed = hasher.hash(password)
+        # TODO: remove addition of user to database
         new_id = User._add_user(conn, cursor, normalised, username, hashed)
 
         cursor.close()
         conn.close()
 
-        return User(normalised, hashed, new_id)
+        # Add verification code to Redis cache, with expiry date of 1 hour
+        code = random.randint(0, 999_999)
+        data = {
+            "code": f"{code:06}",
+            "username": username,
+            "password": hashed
+        }
+
+        pipeline = cache.pipeline()
+
+        # We use a pipeline here to ensure these instructions are atomic
+        pipeline.hset(f"register:{new_id}", mapping=data)
+        pipeline.expire(f"register:{new_id}", timedelta(hours=1))
+
+        pipeline.execute()
+
+        return code
 
     @staticmethod
     def login(email, password):
@@ -103,7 +126,6 @@ class User:
 
     @staticmethod
     def get(id):
-        # TODO: update with new DB schema
         """Given a user's ID, fetches all of their information from the database."""
         conn = get_connection()
         cursor = conn.cursor()

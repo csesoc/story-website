@@ -1,10 +1,22 @@
+import email
+import os
+import poplib
 import requests
 
 from auth.user import User
 from common.database import get_connection, clear_database
 
+def add_user(email, username, password):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    User._add_user(conn, cursor, email, username, password)
+
+    cursor.close()
+    conn.close()
+
 def register(json):
-    response = requests.post("http://localhost:5001/auth/register", json=json)
+    response = requests.post(f"{os.environ['TESTING_ADDRESS']}/auth/register", json=json)
     return response
 
 def test_invalid_email():
@@ -28,19 +40,13 @@ def test_duplicate_email():
     reused_address = "asdfghjkl@gmail.com"
 
     # Register the user in the database directly, to avoid another email
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    User._add_user(conn, cursor, reused_address, "foo", "bar")
+    add_user(reused_address, "foo", "bar")
 
     response = register({
         "email": reused_address,
         "username": "foo",
         "password": "bar"
     })
-
-    cursor.close()
-    conn.close()
 
     assert response.status_code == 400
 
@@ -50,10 +56,7 @@ def test_duplicate_username():
     reused_username = "foo"
 
     # Register the user in the database directly
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    User._add_user(conn, cursor, "asdfghjkl@gmail.com", reused_username, "bar")
+    add_user("asdfghjkl@gmail.com", reused_username, "bar")
 
     response = register({
         "email": "foobar@gmail.com",
@@ -61,10 +64,34 @@ def test_duplicate_username():
         "password": "bar"
     })
 
-    cursor.close()
-    conn.close()
-
     assert response.status_code == 400
 
 def test_success():
-    pass
+    clear_database()
+
+    # Check that we get an email sent
+    mailbox = poplib.POP3("pop3.mailtrap.io", 1100)
+    mailbox.user(os.environ["MAILTRAP_USERNAME"])
+    mailbox.pass_(os.environ["MAILTRAP_PASSWORD"])
+
+    (before, _) = mailbox.stat()
+
+    # Register normally
+    response = register({
+        "email": "asdfghjkl@gmail.com",
+        "username": "asdf",
+        "password": "foobar123"
+    })
+
+    assert response.status_code == 200
+
+    # Check that an email was in fact sent
+    (after, _) = mailbox.stat()
+
+    assert after == before + 1
+
+    # Verify recipient
+    raw_email = b"\n".join(mailbox.retr(1)[1])
+    parsed_email = email.message_from_bytes(raw_email)
+
+    assert parsed_email["To"] == "asdfghjkl@gmail.com"

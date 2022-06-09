@@ -52,8 +52,8 @@ def create_app():
     mail.init_app(app)
 
     # Register smaller parts of the API
-    app.register_blueprint(puzzle, url_prefix="/advent")
     app.register_blueprint(auth, url_prefix="/auth")
+    app.register_blueprint(puzzle, url_prefix="/puzzle")
 
     # Register our error handler
     app.register_error_handler(HTTPException, handle_exception)

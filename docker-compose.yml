@@ -28,5 +28,9 @@ services:
       - "3000:3000"
     env_file: config/.react.env
 
+  redis:
+    container_name: redis_cache
+    image: redis
+
 volumes:
   pg_data:

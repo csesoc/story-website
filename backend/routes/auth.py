@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify
+from flask_mail import Message
 from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
 
 from auth.user import User
 from common.exceptions import AuthError
+from common.plugins import mail
 
 # Constants
 
@@ -28,11 +30,22 @@ def register():
     # TODO: convert to email verification once we get email address
     json = request.get_json()
     
-    user = User.register(json["email"], json["username"], json["password"])
-    token = create_access_token(identity=user)
+    # Fetch verification code
+    code = User.register(json["email"], json["username"], json["password"])
+
+    # Send it over to email
+    message = Message(
+        "Account registered for Week in Wonderland",
+        sender="weekinwonderland@csesoc.org.au",
+        recipients=[json["email"]]
+    )
+    
+    # TODO: convert to HTML message
+    message.body = f"Your code is: {code}"
+
+    mail.send(message)
 
     response = jsonify({})
-    set_access_cookies(response, token)
 
     return response, 200
 

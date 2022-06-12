@@ -6,8 +6,6 @@ services:
     build: ./backend
     depends_on:
       - database
-    volumes:
-      - "./backend:/backend"
     ports:
       - "5001:5001"
     env_file: config/.flask.env
@@ -26,12 +24,13 @@ services:
   frontend:
     container_name: react_frontend
     build: ./frontend
-    volumes:
-      - "./frontend:/frontend"
-      - "/frontend/node_modules"
     ports:
       - "3000:3000"
     env_file: config/.react.env
+
+  redis:
+    container_name: redis_cache
+    image: redis
 
 volumes:
   pg_data:

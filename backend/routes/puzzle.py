@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
 
-from advent.calendar.calendar import calendar
+from puzzles.calendar.calendar import calendar
 
-puzzle = Blueprint("advent", __name__)
+puzzle = Blueprint("puzzle", __name__)
 
 @puzzle.route("/description", methods=["GET"])
 def description():

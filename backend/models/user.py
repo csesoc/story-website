@@ -27,10 +27,6 @@ class User:
         self.stars = stars
         self.score = score
 
-
-    def to_tuple(self):
-        return (self.email, self.username, self.password, self.stars, self.score)
-
     # Helper methods
 
     @staticmethod
@@ -115,8 +111,8 @@ class User:
             if fetched == []:
                 raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-            email, _, password, _, _ = fetched[0]
+            email, username, password, _, _ = fetched[0]
 
         db.putconn(conn)
 
-        return User(email, password, id)
+        return User(email, username, password)

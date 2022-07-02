@@ -15,6 +15,7 @@ redis = "*"
 flask-cors = "*"
 flask-mail = "*"
 gunicorn = "*"
+itsdangerous = "*"
 
 [dev-packages]
 pytest = "*"

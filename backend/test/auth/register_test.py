@@ -3,21 +3,23 @@ import os
 import poplib
 import requests
 
-from auth.user import User
-from common.database import get_connection, clear_database
+from database.database import clear_database
+from database.user import add_user
+from models.user import User
 
-def add_user(email, username, password):
-    conn = get_connection()
-    cursor = conn.cursor()
+# TODO: refactor tests to use https://flask.palletsprojects.com/en/2.1.x/testing/
 
-    User._add_user(conn, cursor, email, username, password)
 
-    cursor.close()
-    conn.close()
+def testing_add_user(email, username, password):
+    user = User(email, username, User.hash_password(password))
+    add_user(user)
+
 
 def register(json):
-    response = requests.post(f"{os.environ['TESTING_ADDRESS']}/auth/register", json=json)
+    response = requests.post(
+        f"{os.environ['TESTING_ADDRESS']}/auth/register", json=json)
     return response
+
 
 def test_invalid_email():
     clear_database()
@@ -34,13 +36,14 @@ def test_invalid_email():
 
     assert response.status_code == 400
 
+
 def test_duplicate_email():
     clear_database()
 
     reused_address = "asdfghjkl@gmail.com"
 
     # Register the user in the database directly, to avoid another email
-    add_user(reused_address, "foo", "bar")
+    testing_add_user(reused_address, "foo", "bar")
 
     response = register({
         "email": reused_address,
@@ -50,13 +53,14 @@ def test_duplicate_email():
 
     assert response.status_code == 400
 
+
 def test_duplicate_username():
     clear_database()
 
     reused_username = "foo"
 
     # Register the user in the database directly
-    add_user("asdfghjkl@gmail.com", reused_username, "bar")
+    testing_add_user("asdfghjkl@gmail.com", reused_username, "bar")
 
     response = register({
         "email": "foobar@gmail.com",
@@ -65,6 +69,7 @@ def test_duplicate_username():
     })
 
     assert response.status_code == 400
+
 
 def test_success():
     clear_database()

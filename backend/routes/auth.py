@@ -1,10 +1,11 @@
-from flask import Blueprint, request, jsonify
+import os
+from flask import Blueprint, render_template, request, jsonify
 from flask_mail import Message
 from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
 
-from auth.user import User
 from common.exceptions import AuthError
 from common.plugins import mail
+from models.user import User
 
 # Constants
 
@@ -32,16 +33,17 @@ def register():
     
     # Fetch verification code
     code = User.register(json["email"], json["username"], json["password"])
+    url = f"{os.environ['TESTING_ADDRESS']}/register/verify/{code}"
+
+    html = render_template("activate.html", confirm_url=url)
 
     # Send it over to email
     message = Message(
         "Account registered for Week in Wonderland",
         sender="weekinwonderland@csesoc.org.au",
-        recipients=[json["email"]]
+        recipients=[json["email"]],
+        html=html
     )
-    
-    # TODO: convert to HTML message
-    message.body = f"Your code is: {code}"
 
     mail.send(message)
 
@@ -49,7 +51,7 @@ def register():
 
     return response, 200
 
-@auth.route("/register/verify", methods=["POST"])
+@auth.route("/register/verify/<token>", methods=["POST"])
 def register_verify():
     # TODO: fill in once we get custom email address
     pass

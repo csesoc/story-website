@@ -6,6 +6,7 @@ import requests
 from database.database import clear_database
 from database.user import add_user
 from models.user import User
+from test.fixtures import app, client
 
 # TODO: refactor tests to use https://flask.palletsprojects.com/en/2.1.x/testing/
 
@@ -20,14 +21,14 @@ def register(json):
     return response
 
 
-def test_invalid_email():
+def test_invalid_email(client):
     clear_database()
 
     # Frontend should detect whether an email address doesn't follow a
     # specific format, so we don't have to handle those errors here
     invalid_address = "foo@guaranteed.invalid"
 
-    response = register({
+    response = client.post("/auth/register", json={
         "email": invalid_address,
         "username": "Test",
         "password": "foobar123"
@@ -36,7 +37,7 @@ def test_invalid_email():
     assert response.status_code == 400
 
 
-def test_duplicate_email():
+def test_duplicate_email(client):
     clear_database()
 
     reused_address = "asdfghjkl@gmail.com"
@@ -44,7 +45,7 @@ def test_duplicate_email():
     # Register the user in the database directly, to avoid another email
     db_add_user(reused_address, "foo", "bar")
 
-    response = register({
+    response = client.post("/auth/register", json={
         "email": reused_address,
         "username": "foo",
         "password": "bar"
@@ -53,7 +54,7 @@ def test_duplicate_email():
     assert response.status_code == 400
 
 
-def test_duplicate_username():
+def test_duplicate_username(client):
     clear_database()
 
     reused_username = "foo"
@@ -61,7 +62,7 @@ def test_duplicate_username():
     # Register the user in the database directly
     db_add_user("asdfghjkl@gmail.com", reused_username, "bar")
 
-    response = register({
+    response = client.post("/auth/register", json={
         "email": "foobar@gmail.com",
         "username": reused_username,
         "password": "bar"
@@ -70,7 +71,7 @@ def test_duplicate_username():
     assert response.status_code == 400
 
 
-def test_success():
+def test_success(client):
     clear_database()
 
     # Check that we get an email sent
@@ -81,7 +82,7 @@ def test_success():
     (before, _) = mailbox.stat()
 
     # Register normally
-    response = register({
+    response = client.post("/auth/register", json={
         "email": "asdfghjkl@gmail.com",
         "username": "asdf",
         "password": "foobar123"

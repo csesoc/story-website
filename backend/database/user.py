@@ -8,7 +8,7 @@ def add_user(email, username, password, stars, score) -> int:
 
     with conn.cursor() as cursor:
         cursor.execute("INSERT INTO Users (email, username, password, numStars, score) VALUES (%s, %s, %s, %s, %s)",
-                       email, username, password, stars, score)
+                       (email, username, password, stars, score))
         conn.commit()
 
         cursor.execute("SELECT uid FROM Users WHERE email = %s", (email,))

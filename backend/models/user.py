@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer
 from common.exceptions import AuthError, InvalidError, RequestError
 from common.redis import cache
 from database.database import db
-from database.user import email_exists, username_exists
+from database.user import add_user, email_exists, username_exists
 
 hasher = PasswordHasher(
     time_cost=2,
@@ -20,7 +20,8 @@ hasher = PasswordHasher(
 verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
 class User:
-    def __init__(self, email, username, password, stars=0, score=0):
+    def __init__(self, id, email, username, password, stars=0, score=0):
+        self.id = id
         self.email = email
         self.username = username
         self.password = password
@@ -75,9 +76,25 @@ class User:
         return code
 
     @staticmethod
+    def register_verify(token):
+        cache_key = f"register:{token}"
+
+        if not cache.exists(cache_key):
+            raise AuthError("Token expired or does not correspond to registering user")
+
+        result = cache.hgetall(cache_key)
+        stringified = {}
+        
+        for key, value in result.items():
+            stringified[key.decode()] = value.decode()
+
+        id = add_user(stringified["email"], stringified["username"], stringified["password"], 0, 0)
+        return User(id, stringified["email"], stringified["username"], stringified["password"])
+
+    @staticmethod
     def login(email, password):
         """Logs user in with their credentials (currently email and password)."""
-        conn = get_connection()
+        conn = db.getconn()
         cursor = conn.cursor()
 
         try:
@@ -95,7 +112,7 @@ class User:
             raise AuthError(description="Invalid email or password") from e
 
         cursor.close()
-        conn.close()
+        db.putconn(conn)
 
         return User(normalised, hashed, id)
 

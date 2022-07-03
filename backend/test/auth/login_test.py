@@ -2,13 +2,11 @@ import os
 import requests
 
 from database.database import clear_database
-# Used for testing purposes!
 from database.user import add_user
 from models.user import User
 
-def testing_add_user(email, username, password):
-    user = User(email, username, User.hash_password(password))
-    add_user(*user.to_tuple())
+def db_add_user(email, username, password):
+    add_user(email, username, User.hash_password(password), 0, 0)
 
 def login(json):
     response = requests.post(f"{os.environ['TESTING_ADDRESS']}/auth/login", json=json)
@@ -27,7 +25,7 @@ def test_no_users():
 def test_invalid_email():
     clear_database()
 
-    testing_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
 
     response = login({
         "email": "foobar@gmail.com",
@@ -39,7 +37,7 @@ def test_invalid_email():
 def test_wrong_password():
     clear_database()
 
-    testing_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
 
     response = login({
         "email": "asdfghjkl@gmail.com",
@@ -51,7 +49,7 @@ def test_wrong_password():
 def test_success():
     clear_database()
 
-    testing_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
 
     response = login({
         ""

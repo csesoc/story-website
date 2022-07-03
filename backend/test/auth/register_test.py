@@ -10,9 +10,8 @@ from models.user import User
 # TODO: refactor tests to use https://flask.palletsprojects.com/en/2.1.x/testing/
 
 
-def testing_add_user(email, username, password):
-    user = User(email, username, User.hash_password(password))
-    add_user(user)
+def db_add_user(email, username, password):
+    add_user(email, username, User.hash_password(password), 0, 0)
 
 
 def register(json):
@@ -43,7 +42,7 @@ def test_duplicate_email():
     reused_address = "asdfghjkl@gmail.com"
 
     # Register the user in the database directly, to avoid another email
-    testing_add_user(reused_address, "foo", "bar")
+    db_add_user(reused_address, "foo", "bar")
 
     response = register({
         "email": reused_address,
@@ -60,7 +59,7 @@ def test_duplicate_username():
     reused_username = "foo"
 
     # Register the user in the database directly
-    testing_add_user("asdfghjkl@gmail.com", reused_username, "bar")
+    db_add_user("asdfghjkl@gmail.com", reused_username, "bar")
 
     response = register({
         "email": "foobar@gmail.com",

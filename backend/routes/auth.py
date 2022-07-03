@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, create_access_token, set_access_coo
 
 from common.exceptions import AuthError
 from common.plugins import mail
+from common.redis import cache
 from models.user import User
 
 # Constants
@@ -33,7 +34,8 @@ def register():
     
     # Fetch verification code
     code = User.register(json["email"], json["username"], json["password"])
-    url = f"{os.environ['TESTING_ADDRESS']}/register/verify/{code}"
+    # TODO: convert to domain of verification page once we have its address
+    url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
 
     html = render_template("activate.html", confirm_url=url)
 
@@ -51,10 +53,17 @@ def register():
 
     return response, 200
 
-@auth.route("/register/verify/<token>", methods=["POST"])
+@auth.route("/register/verify", methods=["POST"])
 def register_verify():
-    # TODO: fill in once we get custom email address
-    pass
+    json = request.get_json()
+
+    user = User.register_verify(json["token"])
+    cookie = create_access_token(identity=user)
+
+    response = jsonify({})
+    set_access_cookies(response, cookie)
+
+    return response, 200
 
 @auth.route("/verify_token", methods=["GET"])
 def verify_token():

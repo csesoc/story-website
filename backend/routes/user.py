@@ -1,29 +1,24 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
+from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request, get_jwt_identity
 
 import re
 
 from common.exceptions import AuthError, RequestError
 from common.database import get_connection
+from auth.user import User
 
 user = Blueprint("user", __name__)
 
 @user.route("/profile", methods=["GET"])
+@jwt_required
 def get_profile():
     try:
-        header, data = verify_jwt_in_request()
+        id = get_jwt_identity()
 
-        conn = get_connection()
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT email FROM Users WHERE uid = %s", (data['id']))
-        email = cursor.fetchone()[0]
-
-        cursor.execute("SELECT username FROM Users WHERE uid = %s", (data['id']))
-        username = cursor.fetchone()[0]
+        user_data = User.get(id)
 
         return {
-            "email": email,
+            "email": user_data.email,
             "username": username
         }
     except:

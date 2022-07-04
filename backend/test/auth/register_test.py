@@ -3,16 +3,9 @@ import os
 import poplib
 import requests
 
-from database.user import add_user
-from models.user import User
-
 # Imports for pytest
-from test.helpers import clear_all
+from test.helpers import clear_all, db_add_user
 from test.fixtures import app, client
-
-
-def db_add_user(email, username, password):
-    add_user(email, username, User.hash_password(password), 0, 0)
 
 
 def register(json):

@@ -1,6 +1,7 @@
 import email
 import os
 import poplib
+import pytest
 import re
 
 # Imports for pytest
@@ -28,7 +29,9 @@ def test_invalid_token(client):
 
     assert response.status_code == 401
 
-# TODO: test for an expired token without waiting for an hour
+@pytest.mark.skip()
+def test_token_expired(client):
+    pass
 
 def test_success(client):
     clear_all()
@@ -55,6 +58,7 @@ def test_success(client):
         if part.get_content_type() == "text/html":
             content = part.get_payload()
 
+    # Extract the token from the HTML
     token = find_token(content)
 
     response = client.post("/auth/register/verify", json={

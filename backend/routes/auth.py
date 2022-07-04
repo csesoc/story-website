@@ -74,7 +74,6 @@ def verify_token():
     return jsonify({}), 200
 
 @auth.route("/logout", methods=["DELETE"])
-@jwt_required()
 def logout():
     response = jsonify({})
     unset_jwt_cookies(response)

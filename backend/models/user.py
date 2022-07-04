@@ -103,7 +103,6 @@ class User:
 
         try:
             id, email, username, stars, score, hashed = result
-            print(id, email, username, hashed, stars, score)
             hasher.verify(hashed, password)
         except (TypeError, VerificationError) as e:
             raise AuthError(description="Invalid email or password") from e
@@ -122,7 +121,7 @@ class User:
             if fetched == []:
                 raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-            id, email, username, password, stars, score = fetched[0]
+            id, email, username, stars, score, password = fetched[0]
 
         db.putconn(conn)
 

@@ -1,18 +1,9 @@
-import os
-import requests
+import pytest
 
-from database.user import add_user
-from models.user import User
 # Import for pytest
-from test.helpers import clear_all
+from test.helpers import clear_all, db_add_user
 from test.fixtures import app, client
 
-def db_add_user(email, username, password):
-    add_user(email, username, User.hash_password(password), 0, 0)
-
-def login(json):
-    response = requests.post(f"{os.environ['TESTING_ADDRESS']}/auth/login", json=json)
-    return response
 
 def test_no_users(client):
     clear_all()
@@ -23,6 +14,7 @@ def test_no_users(client):
     })
 
     assert response.status_code == 401
+
 
 def test_invalid_email(client):
     clear_all()
@@ -36,6 +28,7 @@ def test_invalid_email(client):
 
     assert response.status_code == 401
 
+
 def test_wrong_password(client):
     clear_all()
 
@@ -48,6 +41,11 @@ def test_wrong_password(client):
 
     assert response.status_code == 401
 
+@pytest.mark.skip()
+def test_already_logged_in(client):
+    pass
+
+# TODO: figure out how to extract cookies
 def test_success(client):
     clear_all()
 
@@ -59,3 +57,7 @@ def test_success(client):
     })
 
     assert response.status_code == 200
+
+    print(response.cookies)
+
+    assert False

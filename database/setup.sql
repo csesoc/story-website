@@ -13,6 +13,7 @@ CREATE TABLE Questions (
     cid FOREIGN KEY references Competitions(cid),
     numParts INTEGER NOT NULL,
     name TEXT NOT NULL,
+    pixelArtLine TEXT NOT NULL,
     dayNum INTEGER UNIQUE NOT NULL
 );
 

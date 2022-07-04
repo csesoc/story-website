@@ -5,7 +5,6 @@ from flask_jwt_extended import jwt_required, create_access_token, set_access_coo
 
 from common.exceptions import AuthError
 from common.plugins import mail
-from common.redis import cache
 from models.user import User
 
 # Constants

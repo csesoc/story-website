@@ -3,12 +3,12 @@ import os
 import poplib
 import requests
 
-from database.database import clear_database
 from database.user import add_user
 from models.user import User
-from test.fixtures import app, client
 
-# TODO: refactor tests to use https://flask.palletsprojects.com/en/2.1.x/testing/
+# Imports for pytest
+from test.helpers import clear_all
+from test.fixtures import app, client
 
 
 def db_add_user(email, username, password):
@@ -22,7 +22,7 @@ def register(json):
 
 
 def test_invalid_email(client):
-    clear_database()
+    clear_all()
 
     # Frontend should detect whether an email address doesn't follow a
     # specific format, so we don't have to handle those errors here
@@ -38,7 +38,7 @@ def test_invalid_email(client):
 
 
 def test_duplicate_email(client):
-    clear_database()
+    clear_all()
 
     reused_address = "asdfghjkl@gmail.com"
 
@@ -55,7 +55,7 @@ def test_duplicate_email(client):
 
 
 def test_duplicate_username(client):
-    clear_database()
+    clear_all()
 
     reused_username = "foo"
 
@@ -72,7 +72,7 @@ def test_duplicate_username(client):
 
 
 def test_success(client):
-    clear_database()
+    clear_all()
 
     # Check that we get an email sent
     mailbox = poplib.POP3("pop3.mailtrap.io", 1100)

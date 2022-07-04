@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer
 from common.exceptions import AuthError, InvalidError, RequestError
 from common.redis import cache
 from database.database import db
-from database.user import add_user, email_exists, username_exists
+from database.user import add_user, email_exists, fetch_user, username_exists
 
 hasher = PasswordHasher(
     time_cost=2,
@@ -94,27 +94,21 @@ class User:
     @staticmethod
     def login(email, password):
         """Logs user in with their credentials (currently email and password)."""
-        conn = db.getconn()
-        cursor = conn.cursor()
-
         try:
             normalised = validate_email(email).email
         except EmailNotValidError as e:
             raise AuthError(description="Invalid email or password") from e
 
-        cursor.execute("SELECT * FROM Users WHERE email = %s", (normalised,))
-        result = cursor.fetchone()
+        result = fetch_user(normalised)
 
         try:
-            id, _, hashed = result
+            id, email, username, stars, score, hashed = result
+            print(id, email, username, hashed, stars, score)
             hasher.verify(hashed, password)
         except (TypeError, VerificationError) as e:
             raise AuthError(description="Invalid email or password") from e
 
-        cursor.close()
-        db.putconn(conn)
-
-        return User(normalised, hashed, id)
+        return User(id, email, username, hashed, stars, score)
 
     @staticmethod
     def get(id):
@@ -128,8 +122,8 @@ class User:
             if fetched == []:
                 raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-            email, username, password, _, _ = fetched[0]
+            id, email, username, password, stars, score = fetched[0]
 
         db.putconn(conn)
 
-        return User(email, username, password)
+        return User(id, email, username, password, stars, score)

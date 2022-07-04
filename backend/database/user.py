@@ -18,6 +18,19 @@ def add_user(email, username, password, stars, score) -> int:
     return id
 
 
+def fetch_user(email: str):
+    """Given a user's email, fetches their content from the database."""
+
+    conn = db.getconn()
+
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM Users WHERE email = %s", (email,))
+        result = cursor.fetchone()
+
+    db.putconn(conn)
+    return result
+
+
 def email_exists(email: str) -> bool:
     """Checks if an email exists in the users table."""
 

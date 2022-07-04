@@ -1,5 +1,7 @@
+## BASE BUILD THAT BOTH DEV AND PROD INHERIT FROM
+
 # pull official base image
-FROM python:3.8.10-slim-buster
+FROM python:3.8.10-slim-buster AS base
 
 # set work directory
 WORKDIR /backend
@@ -11,10 +13,27 @@ ENV PYTHONUNBUFFERED 1
 COPY Pipfile* /backend/
 
 RUN pip install pipenv
-RUN pipenv lock -r > requirements.txt
-RUN pip uninstall --yes pipenv
-RUN pip install -r requirements.txt
 
 EXPOSE 5001
 
+## DEV BUILD
+
+FROM base as dev
+
+RUN pipenv lock --dev --requirements > requirements.txt \
+    && pip uninstall --yes pipenv \
+    && pip install -r requirements.txt
+
+ENV FLASK_ENV development
+
 CMD [ "python", "app.py" ]
+
+## PROD BUILD
+
+FROM base as prod
+
+RUN pipenv lock --requirements > requirements.txt \
+    && pip uninstall --yes pipenv \
+    && pip install -r requirements.txt
+
+CMD [ "gunicorn", "--bind", "0.0.0.0:5001", "app:app" ]

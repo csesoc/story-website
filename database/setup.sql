@@ -52,4 +52,3 @@ CREATE TABLE Solves (
     FOREIGN KEY (uid) REFERENCES Users(uid),
     FOREIGN KEY (pid) REFERENCES Parts(pid)
 );
-

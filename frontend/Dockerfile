@@ -1,19 +1,39 @@
+## BASE IMAGE
+
 # pulling official base image
-FROM node:17.9-alpine
+FROM node:17.9-alpine AS base
 
 # Setting working directory
 WORKDIR /frontend
 RUN chown -R node:node /frontend
 
-# Cache and Install dependnecies
-COPY --chown=node:node package.json .
-RUN npm install 
+COPY --chown=node:node package.json yarn.lock ./
 
-COPY --chown=node:node . .
 USER node
 
 # exposing ports
 EXPOSE 3000
 
+## DEV BUILD
+
+FROM base as dev
+
+# Cache and Install dependnecies
+RUN yarn install
+
+COPY --chown=node:node . .
+
 # npm start
-CMD [ "npm", "start" ]
+CMD [ "yarn", "start" ]
+
+## PROD BUILD
+
+FROM base as prod-build
+
+RUN yarn install --prod \
+    && yarn build
+
+FROM nginx:stable-alpine as prod
+
+COPY --from=prod-build /frontend/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf

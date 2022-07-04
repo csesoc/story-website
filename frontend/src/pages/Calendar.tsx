@@ -4,13 +4,22 @@ import { useNavigate } from "react-router-dom";
 
 import styles from "../App.module.css";
 
+import PuzzleBox from "../components/PuzzleBox";
+
 import { BACKEND_URI } from "src/config";
 
-interface problem {
+export interface puzzle {
   name : string;
   dayNum : number;
   pixelArtLine : string;
-  numParts : number;
+  partsInfo : part[];
+}
+
+export interface part {
+  partNum: number,
+  description: string,
+  solved: boolean,
+  answer: string
 }
 
 // puzzle: {
@@ -21,30 +30,30 @@ interface problem {
 // }
 
 const Calendar: React.FC<{}> = () => {
-  const defaultProblems : problem[] = [
+  const defaultProblems : puzzle[] = [
     {
       name: 'Manav is a very cool ice cube',
       dayNum : 1,
       pixelArtLine : '...____..._____..._______...',
-      numParts : 2,
+      partsInfo : [],
     },
     {
       name: 'Jason is a very cool ice cube',
       dayNum : 2,
       pixelArtLine : '...____..._____..._______...',
-      numParts : 2,
+      partsInfo : [],
     },
     {
       name: 'Hanh is a very cool ice cube',
       dayNum : 3,
       pixelArtLine : '...____..._____..._______...',
-      numParts : 2,
+      partsInfo : [],
     },
     {
       name: 'Hanyuan is a very cool ice cube',
       dayNum : 4,
       pixelArtLine : '...____..._____..._______...',
-      numParts : 2,
+      partsInfo : [],
     }
   ];
   const [times, setTimes] = useState(0);
@@ -95,7 +104,7 @@ const Calendar: React.FC<{}> = () => {
         {showPuzzles.map((puzzle, i) =>
         <div key={'puzzle_' + i} className={styles.puzzleBox}>
           <h2>{'Question ' + (i + 1)}</h2>
-          <PuzzleBox puzzleInfo={puzzle} />
+          <PuzzleBox name={puzzle.name} dayNum={puzzle.dayNum} pixelArtLine={puzzle.pixelArtLine} partsInfo={puzzle.partsInfo}/>
           <br />
         </div>)}
       </div>

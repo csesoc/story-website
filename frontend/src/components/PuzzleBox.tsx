@@ -7,15 +7,27 @@ import styles from '../nav.module.css';
 
 import {puzzle, part} from '../pages/Calendar';
 
-function PuzzleBox (props : puzzle) {
+function PuzzleBox (puzzleInfo : puzzle) {
   const navigate = useNavigate();
-  console.log(props.name);
+  
+  let numStars : number = 0;
+  for (let p of puzzleInfo.partsInfo) {
+    numStars += p.solved ? 1 : 0;
+  }
+
   return (
     <>
       <div className={styles.puzzleBox}>
         <span>
-          {props.pixelArtLine}
+          {puzzleInfo.pixelArtLine}
         </span>
+        <span>
+          {puzzleInfo.dayNum}
+        </span>
+        <span>
+          {numStars} {' Stars'}
+        </span>
+        
 
       </div>
     </>

@@ -83,6 +83,7 @@ body {
 
 .leaderboardPage {
   padding-left: 20px;
+  white-space: pre-wrap;
 }
 
 .userProfile {
@@ -90,7 +91,6 @@ body {
 }
 
 .profileText {
-  white-space: pre;
   padding-right: 8px;
 }
 
@@ -98,11 +98,28 @@ body {
   padding-right: 4px;
 }
 
-.userLinkText {
+.link {
   color: #009900;
   text-decoration: none;
 }
 
+.dayLink {
+  color: #009900;
+  text-decoration: none;
+  cursor: pointer;
+  padding-left: 4px;
+}
+
+.daySelected {
+  color: white;
+  font-weight: 700;
+  padding-left: 4px;
+}
+
 .userNoLinkText {
   padding-left: 24px;
+}
+
+.leaderBoardDays {
+  padding-left: 4px;
 }

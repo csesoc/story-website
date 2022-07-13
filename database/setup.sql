@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS Users;
 CREATE TABLE Users (
     uid SERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
+    github TEXT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL
 );

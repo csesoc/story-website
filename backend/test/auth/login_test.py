@@ -57,7 +57,6 @@ def test_success(client):
     })
 
     assert response.status_code == 200
-
     print(response.cookies)
 
     assert False

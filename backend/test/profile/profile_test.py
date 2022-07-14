@@ -3,6 +3,7 @@ import os
 import poplib
 import pytest
 import re
+import requests
 
 # Imports for pytest
 from test.helpers import clear_all
@@ -16,24 +17,9 @@ def find_token(contents):
 
     return results[0]
 
-## TESTS
+### test starts here
 
-def test_invalid_token(client):
-    clear_all()
-
-    invalid_token = "invalid"
-
-    response = client.post("/auth/register/verify", json={
-        "token": invalid_token
-    })
-
-    assert response.status_code == 401
-
-@pytest.mark.skip()
-def test_token_expired(client):
-    pass
-
-def test_success(client):
+def test_profile(client):
     clear_all()
 
     register_response = client.post("/auth/register", json={
@@ -66,3 +52,10 @@ def test_success(client):
     })
 
     assert response.status_code == 200
+    profile = client.get("/user/profile")
+    assert profile.status_code == 200
+    assert profile.json == {
+        "email": "asdfghjkl@gmail.com",
+        "username": "asdf"
+    }
+

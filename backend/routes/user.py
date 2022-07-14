@@ -5,22 +5,22 @@ import re
 
 from common.exceptions import AuthError, RequestError
 from common.database import get_connection
-from auth.user import User
+from models.user import User
 
 user = Blueprint("user", __name__)
 
 @user.route("/profile", methods=["GET"])
-@jwt_required
 def get_profile():
     try:
+        verify_jwt_in_request()
         id = get_jwt_identity()
 
         user_data = User.get(id)
 
-        return {
+        return jsonify({
             "email": user_data.email,
-            "username": username
-        }
+            "username": user_data.username
+        })
     except:
         raise AuthError("Invalid Token")
 
@@ -28,13 +28,14 @@ def get_profile():
 
 @user.route("/user/stats", methods=['GET'])
 def get_stats():
-    token = request.args.get('token')
-    competition = request.args.get('competition')
 
     # Raise RequestError if competition is not valid ()
 
     try:
-        header, content = verify_jwt_in_request()
+        verify_jwt_in_request()
+        id = get_jwt_identity()
+        competition = request.args.get('competition')
+        user_data = User.get(id)
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -51,7 +52,7 @@ def get_stats():
         }
     except:
         raise AuthError("Invalid token")
-
+"""
 
 @user.route("/user/set_name", methods=['POST'])
 def set_name():
@@ -121,3 +122,4 @@ def reset_password_request():
     return jsonify({})
 
 
+"""

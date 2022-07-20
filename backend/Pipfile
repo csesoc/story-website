@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [[source]]
 url = "https://pypi.python.org/simple"
 verify_ssl = true
@@ -22,3 +23,33 @@ requests = "*"
 
 [requires]
 python_version = "3.8"
+=======
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+Flask = "*"
+Flask-SQLAlchemy = "*"
+Flask-Login = "*"
+psycopg2-binary = "*"
+email-validator = "*"
+argon2-cffi = "*"
+flask-jwt-extended = "*"
+redis = "*"
+flask-cors = "*"
+flask-mail = "*"
+gunicorn = "*"
+itsdangerous = "*"
+
+[dev-packages]
+pytest = "*"
+requests = "*"
+freezegun = "*"
+fakeredis = "*"
+pytest-mock = "*"
+
+[requires]
+python_version = "3.8"
+>>>>>>> ffb4c6ef4ed862c6fec20a1167c30d75808de300

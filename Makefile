@@ -39,4 +39,4 @@ restart:
 .PHONY: test-backend
 
 test-backend:
-	docker-compose exec backend pytest .
+	docker-compose exec backend pytest . $(args)

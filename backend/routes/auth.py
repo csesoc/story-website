@@ -1,8 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, jsonify
 from flask_mail import Message
-from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
-
+from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
 from common.exceptions import AuthError
 from common.plugins import mail
 from models.user import User
@@ -12,7 +11,7 @@ from models.user import User
 auth = Blueprint("auth", __name__)
 
 # Routes (fairly temporary here)
-# TODO: update once CSESoc federated auth is set up, do proper research
+# TODO: add invalid login attempt protection
 
 @auth.route("/login", methods=["POST"])
 def login():
@@ -73,9 +72,10 @@ def verify_token():
 
     return jsonify({}), 200
 
-@auth.route("/logout", methods=["DELETE"])
+@auth.route("/logout", methods=["POST"])
 def logout():
     response = jsonify({})
     unset_jwt_cookies(response)
 
     return response, 200
+    

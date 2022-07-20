@@ -41,11 +41,6 @@ def test_wrong_password(client):
 
     assert response.status_code == 401
 
-@pytest.mark.skip()
-def test_already_logged_in(client):
-    pass
-
-# TODO: figure out how to extract cookies
 def test_success(client):
     clear_all()
 
@@ -58,6 +53,4 @@ def test_success(client):
 
     assert response.status_code == 200
 
-    print(response.cookies)
-
-    assert False
+    # TODO: once user profile is in, improve this test

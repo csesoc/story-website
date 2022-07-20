@@ -41,7 +41,7 @@ def create_app():
     app.config["JWT_BLACKLIST_ENABLED"] = True
     app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["refresh"]
     app.config["JWT_COOKIE_CSRF_PROTECT"] = True
-    app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+    app.config["JWT_TOKEN_LOCATION"] = "cookies"
 
     # TODO: convert to CSESoc SMTP server (if we have one) once we get that
     app.config["MAIL_SERVER"] = "smtp.mailtrap.io"

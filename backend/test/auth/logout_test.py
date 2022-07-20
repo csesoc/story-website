@@ -15,6 +15,10 @@ def test_success(client):
     assert login_response.status_code == 200
 
     # Log user out
-    response = client.delete("/auth/logout")
+    response = client.post("/auth/logout")
 
     assert response.status_code == 200
+
+    # Check there's no more cookies
+    assert len(client.cookie_jar) == 0
+    

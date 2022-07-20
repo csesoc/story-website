@@ -4,7 +4,8 @@ from flask_jwt_extended import jwt_required, create_access_token, set_access_coo
 import re
 
 from common.exceptions import AuthError, RequestError
-from common.database import get_connection
+from common.database import getCompetitionQuestions, getUserStatsPerComp, updateUsername
+from database.user import username_exists
 from models.user import User
 
 user = Blueprint("user", __name__)
@@ -29,7 +30,7 @@ def get_profile():
 @user.route("/user/stats", methods=['GET'])
 def get_stats():
 
-    # Raise RequestError if competition is not valid ()
+    # Raise RequestError if competition is not valid
 
     try:
         verify_jwt_in_request()
@@ -37,39 +38,46 @@ def get_stats():
         competition = request.args.get('competition')
         user_data = User.get(id)
 
-        conn = get_connection()
-        cursor = conn.cursor()
 
-        cursor.execute("SELECT name FROM Competitions WHERE uid = %s", (content['id']))
-        competition = cursor.fetchone()[0]
-        if competition is "":
-            raise RequestError
+        if getCompetitionQuestions(competition) == {}:
+            raise RequestError("The competition doesn't exist")
+
+        stats = getUserStatsPerComp(competition, user_data.id)
         
         ## find a way to get the stat infos, they are spread across multiple tables.
 
-        return {
-            "stats": []
-        }
+        return jsonify({
+            "stats": stats
+        })
     except:
         raise AuthError("Invalid token")
-"""
 
 @user.route("/user/set_name", methods=['POST'])
 def set_name():
-    json = request.get_json()
     '''
     {
     token: token (in cookies)
     username: string
     }
     '''
-    # if username already in database, raise RequestError.
+    
     try:
         verify_jwt_in_request()
-        return {}
+        id = get_jwt_identity()
+        user_data = User.get(id)
+        json = request.get_json()
+        username = json["username"]
+
+        # if username already in database, raise RequestError.
+        if username_exists(username):
+            raise RequestError(description="Username already used")
+        else:
+            updateUsername(username, id)
+
+        return jsonify({})
     except:
         raise AuthError("Invalid token")
-
+"""
 @user.route("/user/reset_email/request", methods=["POST"])
 def reset_email_request():
     data = request.get_json()

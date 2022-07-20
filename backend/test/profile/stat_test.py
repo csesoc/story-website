@@ -17,7 +17,7 @@ def find_token(contents):
 
 ### test starts here
 
-def test_profile(client):
+def test_stats(client):
     clear_all()
 
     register_response = client.post("/auth/register", json={
@@ -56,4 +56,9 @@ def test_profile(client):
         "email": "asdfghjkl@gmail.com",
         "username": "asdf"
     }
+
+    stats = client.get("/user/stats") 
+    assert stats.status_code == 200
+    print(stats.json)
+    assert 1 == 0
 

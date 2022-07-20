@@ -7,10 +7,8 @@ from werkzeug.exceptions import HTTPException
 
 from auth.jwt import update_token
 from common.plugins import jwt, mail
-from database.database import db
 from routes.auth import auth
 from routes.puzzle import puzzle
-
 
 def handle_exception(error):
     response = error.get_response()
@@ -29,9 +27,6 @@ def handle_exception(error):
 def create_app():
     app = Flask(__name__)
     CORS(app)
-
-    # Add database
-    app.config["DATABASE"] = db
 
     # Configure with all our custom settings
     app.config["JWT_SECRET_KEY"] = os.environ["FLASK_SECRET"]

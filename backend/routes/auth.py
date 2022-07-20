@@ -78,4 +78,3 @@ def logout():
     unset_jwt_cookies(response)
 
     return response, 200
-    

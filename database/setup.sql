@@ -2,47 +2,54 @@ DROP TABLE IF EXISTS Users;
 CREATE TABLE Users (
     uid SERIAL PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
+    github TEXT,
     username TEXT UNIQUE NOT NULL,
-    numStars INTEGER NOT NULL,
-    score INTEGER NOT NULL,
     password TEXT NOT NULL
 );
 
 DROP TABLE IF EXISTS Questions;
 CREATE TABLE Questions (
     qid SERIAL PRIMARY KEY,
+    cid FOREIGN KEY references Competitions(cid),
+    numParts INTEGER NOT NULL,
     name TEXT NOT NULL,
+    dayNum INTEGER UNIQUE NOT NULL
+);
+
+DROP TABLE IF EXISTS Parts;
+CREATE TABLE Parts (
+    qid FOREIGN KEY references Questions(qid),
     description TEXT NOT NULL,
     partNum INTEGER NOT NULL,
-    numParts INTEGER NOT NULL,
     numSolved INTEGER NOT NULL,
     bestTime TIME,
-    dayNum INTEGER UNIQUE NOT NULL
+    PRIMARY KEY (qid, partNum)
 );
 
 DROP TABLE IF EXISTS Competitions;
 CREATE TABLE Competitions (
     cid SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT UNIQUE NOT NULL,
     numUsers INTEGER NOT NULL,
-    questions TEXT 
+    numQuestions INTEGER NOT NULL
 );
 
 DROP TABLE IF EXISTS Inputs;
 CREATE TABLE Inputs (
     iid SERIAL PRIMARY KEY,
-    qid INTEGER,
-    solution TEXT NOT NULL,
-    FOREIGN KEY (qid) REFERENCES Questions(qid)
+    qid FOREIGN KEY references Questions(qid),
+    uid FOREIGN KEY references Users(id),
+    input TEXT NOT NULL,
+    solution TEXT NOT NULL
 );
 
 DROP TABLE IF EXISTS Solves;
 CREATE TABLE Solves (
     uid INTEGER,
-    qid INTEGER,
+    pid INTEGER,
     solveTime TIME NOT NULL,
     points INTEGER NOT NULL,
-    PRIMARY KEY (uid, qid),
+    PRIMARY KEY (uid, pid),
     FOREIGN KEY (uid) REFERENCES Users(uid),
-    FOREIGN KEY (qid) REFERENCES Questions(qid)
+    FOREIGN KEY (pid) REFERENCES Parts(pid)
 );

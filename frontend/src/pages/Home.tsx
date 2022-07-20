@@ -19,7 +19,7 @@ const Home: React.FC<{}> = () => {
     <>
       <Container className="justify-content-center text-center">
         <p>You have clicked this button {times} times.</p>
-        <Button onClick={() => setTimes(times + 1)}>Click me!</Button>
+        <Button onClick={() => setTimes(times + 1)}>Home Page</Button>
       </Container>
     </>
   )

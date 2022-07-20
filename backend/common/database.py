@@ -203,15 +203,3 @@ def dropDatabase():
     """
     cur.execute(query)
     conn.commit()
-
-def clear_database():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    for table in TABLES:
-        cursor.execute(f"TRUNCATE TABLE {table} CASCADE")
-
-    conn.commit()
-
-    cursor.close()
-    conn.close()

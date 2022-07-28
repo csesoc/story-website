@@ -23,6 +23,7 @@ def handle_exception(error):
 
     return response
 
+
 def create_app():
     app = Flask(__name__)
     CORS(app)
@@ -59,6 +60,7 @@ def create_app():
     app.register_error_handler(HTTPException, handle_exception)
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()

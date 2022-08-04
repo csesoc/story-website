@@ -1,9 +1,12 @@
 import os
 from flask import Blueprint, render_template, request, jsonify
 from flask_mail import Message
-from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
+from flask_jwt_extended import create_access_token, get_current_user, get_jwt_identity, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
+
 from common.exceptions import AuthError
 from common.plugins import mail
+from common.redis import is_blocked, register_incorrect
+from database.user import fetch_id
 from models.user import User
 
 # Constants
@@ -17,7 +20,17 @@ auth = Blueprint("auth", __name__)
 def login():
     json = request.get_json()
 
-    user = User.login(json["email"], json["password"])
+    id = fetch_id(json["email"])
+
+    if is_blocked(id):
+        raise AuthError()
+
+    try:
+        user = User.login(json["email"], json["password"])
+    except Exception as e:
+        register_incorrect(id)
+        raise e
+
     token = create_access_token(identity=user)
 
     response = jsonify({})

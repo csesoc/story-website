@@ -18,6 +18,19 @@ def add_user(email, username, password, stars, score) -> int:
     return id
 
 
+def fetch_id(email: str):
+    """Given a user's email, fetches their ID."""
+
+    conn = db.getconn()
+
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT uid FROM Users WHERE email = %s", (email,))
+        id = cursor.fetchone()[0]
+
+    db.putconn(conn)
+    return id
+
+
 def fetch_user(email: str):
     """Given a user's email, fetches their content from the database."""
 

@@ -77,3 +77,54 @@ body {
 .aboutPage {
   padding: 20px;
 }
+
+/* --------------------------------------------------------- CALENDAR PAGE STYLES ---------------------------------------------------------*/
+
+.puzzleBox {
+  padding: 20px;
+}
+
+/* --------------------------------------------------------- LEADERBOARD PAGE STYLES ---------------------------------------------------*/
+
+.leaderboardPage {
+  padding-left: 20px;
+  white-space: pre-wrap;
+}
+
+.userProfile {
+  font-family: monospace;
+}
+
+.profileText {
+  padding-right: 8px;
+}
+
+.userImg {
+  padding-right: 4px;
+}
+
+.link {
+  color: #009900;
+  text-decoration: none;
+}
+
+.dayLink {
+  color: #009900;
+  text-decoration: none;
+  cursor: pointer;
+  padding-left: 4px;
+}
+
+.daySelected {
+  color: white;
+  font-weight: 700;
+  padding-left: 4px;
+}
+
+.userNoLinkText {
+  padding-left: 24px;
+}
+
+.leaderBoardDays {
+  padding-left: 4px;
+}

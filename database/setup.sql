@@ -10,15 +10,16 @@ CREATE TABLE Users (
 DROP TABLE IF EXISTS Questions;
 CREATE TABLE Questions (
     qid SERIAL PRIMARY KEY,
-    cid FOREIGN KEY references Competitions(cid),
+    FOREIGN (cid) KEY references Competitions(cid),
     numParts INTEGER NOT NULL,
     name TEXT NOT NULL,
+    pixelArtLine TEXT NOT NULL,
     dayNum INTEGER UNIQUE NOT NULL
 );
 
 DROP TABLE IF EXISTS Parts;
 CREATE TABLE Parts (
-    qid FOREIGN KEY references Questions(qid),
+    FOREIGN KEY (qid) references Questions(qid),
     description TEXT NOT NULL,
     partNum INTEGER NOT NULL,
     numSolved INTEGER NOT NULL,
@@ -37,8 +38,8 @@ CREATE TABLE Competitions (
 DROP TABLE IF EXISTS Inputs;
 CREATE TABLE Inputs (
     iid SERIAL PRIMARY KEY,
-    qid FOREIGN KEY references Questions(qid),
-    uid FOREIGN KEY references Users(id),
+    FOREIGN KEY (qid) references Questions(qid),
+    FOREIGN KEY (uid) references Users(id),
     input TEXT NOT NULL,
     solution TEXT NOT NULL
 );

@@ -22,7 +22,7 @@ def clear_database():
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        cursor.execute(f"""SELECT 'TRUNCATE TABLE ' ||  tablename || ';' FROM pg_tables""")
+        cursor.execute(f"""SELECT truncate_tables();""")
         conn.commit()
     
     db.putconn(conn)

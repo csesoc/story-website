@@ -54,12 +54,10 @@ def get_stats():
 
 @user.route("/set_name", methods=['POST'])
 def set_name():
-    '''
-    {
-    token: token (in cookies)
-    username: string
-    }
-    '''
+    # {
+    # token: token (in cookies)
+    # username: string
+    # }
     
     try:
         print('hello')
@@ -87,57 +85,54 @@ def set_name():
 
 
 
-"""
-@user.route("/reset_email/request", methods=["POST"])
-def reset_email_request():
-    data = request.get_json()
-    '''
-    {
-        token: token (in cookies)
-        email: string
-    }
-    '''
-    try:
-        verify_jwt_in_request()
-    except:
-        raise AuthError("Invalid token")
+# @user.route("/reset_email/request", methods=["POST"])
+# def reset_email_request():
+#     data = request.get_json()
+#     '''
+#     {
+#         token: token (in cookies)
+#         email: string
+#     }
+#     '''
+#     try:
+#         verify_jwt_in_request()
+#     except:
+#         raise AuthError("Invalid token")
 
 
-    # Check if email refers to an actual email.
-    if not re.match('^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$', data['email']):
-        raise RequestError("email not valid")
-    return {}
+#     # Check if email refers to an actual email.
+#     if not re.match('^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$', data['email']):
+#         raise RequestError("email not valid")
+#     return {}
 
 
 
     
-@user.route("/reset_email/reset", methods=['POST'])
-def reset_email():
-    json = request.get_json()
-    '''
-    {
-    token: token (in cookie)
-    reset_code: string
-    }
-    '''
-    try:
-        verify_jwt_in_request()
-    except:
-        raise AuthError("Invalid token")
+# @user.route("/reset_email/reset", methods=['POST'])
+# def reset_email():
+#     json = request.get_json()
+#     '''
+#     {
+#     token: token (in cookie)
+#     reset_code: string
+#     }
+#     '''
+#     try:
+#         verify_jwt_in_request()
+#     except:
+#         raise AuthError("Invalid token")
 
-    '''
-    if (json['reset_code'] not match the code in database for user):
-        raise AuthError("The reset code is wrong.")
-    else:
-        reset email.
-    '''
-
-
-
-@user.route("/reset_password/request", methods=["POST"])
-def reset_password_request():
-    json = request.get_json()
-    return jsonify({})
+#     '''
+#     if (json['reset_code'] not match the code in database for user):
+#         raise AuthError("The reset code is wrong.")
+#     else:
+#         reset email.
+#     '''
 
 
-"""
+
+# @user.route("/reset_password/request", methods=["POST"])
+# def reset_password_request():
+#     json = request.get_json()
+#     return jsonify({})
+

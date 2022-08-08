@@ -7,7 +7,7 @@ host = os.environ["POSTGRES_HOST"]
 port = os.environ["POSTGRES_PORT"]
 database = os.environ["POSTGRES_DB"]
 
-TABLES = ["Users", "Questions", "Parts", "Competitions", "Inputs", "Solves"]
+# TABLES = ["Users", "Questions", "Parts", "Competitions", "Inputs", "Solves"]
 
 db = ThreadedConnectionPool(
     1, 20,

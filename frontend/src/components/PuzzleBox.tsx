@@ -3,7 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { useNavigate } from 'react-router-dom';
-import styles from '../nav.module.css';
+import styles from '../App.module.css';
 
 import {puzzle, part} from '../pages/Calendar';
 

@@ -2,6 +2,7 @@ import email
 import os
 import poplib
 import re
+from sqlite3 import paramstyle
 
 # Imports for pytest
 from test.helpers import clear_all
@@ -56,9 +57,9 @@ def test_stats(client):
         "email": "asdfghjkl@gmail.com",
         "username": "asdf"
     }
-
-    stats = client.get("/user/stats") 
+    # , params={'competition': 'Alice in Wonderweek'}
+    stats = client.get("/user/stats", json={
+        "competition": 'Alice in Wonderweek'
+    }) 
     assert stats.status_code == 200
-    print(stats.json)
-    assert 1 == 0
 

@@ -204,10 +204,6 @@ def dropDatabase():
     cur.execute(query)
     conn.commit()
 
-def clear_database():
-    conn = get_connection()
-    cursor = conn.cursor()
-
 # IMPORTANT: executing a query is expensive, so we would rather write more functions than write more execute queries.
 
 # Get all the information about a question given its day number
@@ -382,12 +378,3 @@ def updateUsername(username, uid):
     cursor.close()
     conn.close()
     '''
-# DO NOT EVER EXECUTE THIS FUNCTION BRUH
-def dropDatabase():
-    query = f"""
-        SELECT 'DROP TABLE IF EXISTS "' || tablename || '" CASCADE;' 
-        from
-        pg_tables WHERE schemaname = 'advent';
-    """
-    cur.execute(query)
-    conn.commit()

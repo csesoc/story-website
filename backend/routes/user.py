@@ -27,7 +27,7 @@ def get_profile():
 
 
 
-@user.route("/user/stats", methods=['GET'])
+@user.route("/stats", methods=['GET'])
 def get_stats():
 
     # Raise RequestError if competition is not valid
@@ -36,13 +36,13 @@ def get_stats():
         verify_jwt_in_request()
         id = get_jwt_identity()
         competition = request.args.get('competition')
-        user_data = User.get(id)
-
 
         if getCompetitionQuestions(competition) == {}:
             raise RequestError("The competition doesn't exist")
 
-        stats = getUserStatsPerComp(competition, user_data.id)
+        # TODO: fix this function.
+
+        stats = getUserStatsPerComp(competition, id)
         
         ## find a way to get the stat infos, they are spread across multiple tables.
 
@@ -52,7 +52,7 @@ def get_stats():
     except:
         raise AuthError("Invalid token")
 
-@user.route("/user/set_name", methods=['POST'])
+@user.route("/set_name", methods=['POST'])
 def set_name():
     '''
     {
@@ -62,11 +62,18 @@ def set_name():
     '''
     
     try:
+        print('hello')
+        print('hello0')
         verify_jwt_in_request()
+        print('hello1')
         id = get_jwt_identity()
+        print('hello2')
         user_data = User.get(id)
+        print('hello3')
         json = request.get_json()
+        print('hello4')
         username = json["username"]
+        print('hello5')
 
         # if username already in database, raise RequestError.
         if username_exists(username):
@@ -77,8 +84,11 @@ def set_name():
         return jsonify({})
     except:
         raise AuthError("Invalid token")
+
+
+
 """
-@user.route("/user/reset_email/request", methods=["POST"])
+@user.route("/reset_email/request", methods=["POST"])
 def reset_email_request():
     data = request.get_json()
     '''
@@ -101,7 +111,7 @@ def reset_email_request():
 
 
     
-@user.route("/user/reset_email/reset", methods=['POST'])
+@user.route("/reset_email/reset", methods=['POST'])
 def reset_email():
     json = request.get_json()
     '''
@@ -124,7 +134,7 @@ def reset_email():
 
 
 
-@user.route("/user/reset_password/request", methods=["POST"])
+@user.route("/reset_password/request", methods=["POST"])
 def reset_password_request():
     json = request.get_json()
     return jsonify({})

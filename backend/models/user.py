@@ -119,7 +119,7 @@ class User:
             if fetched == []:
                 raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-            id, email, username, github, password = fetched[0]
+            id, email, github, username, password = fetched[0]
 
         db.putconn(conn)
 

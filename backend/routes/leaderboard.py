@@ -9,7 +9,6 @@ import re
 
 from common.exceptions import AuthError, RequestError
 from common.database import getCompetitionQuestions, getNLeaderboard, searchLeaderboard, getRankLeaderboard
-from database.user import username_exists
 from models.user import User
 
 leaderboard = Blueprint("leaderboard", __name__)
@@ -26,18 +25,27 @@ def get_leaderboard_twenty():
     # {
     #   leaderboard: score[]
     # }
+    print('hello')
+
 
     try:
+        print('hello')
         verify_jwt_in_request()
+        print('hello1')
         id = get_jwt_identity()
         competition = request.args.get('competition')
         if getCompetitionQuestions(competition) == {}:
             raise RequestError("The competition doesn't exist")
 
+        print('hello2')
+        
+
         prefix = request.args.get('string')
         returnList = []
 
         if (prefix is None or prefix == ''):
+            print('hello3')
+
             scores = getNLeaderboard(competition, 20)
             for (idx, score) in enumerate(scores):
                 returnList.append({
@@ -66,6 +74,7 @@ def get_leaderboard_twenty():
     except:
         raise AuthError("Invalid token")
 
+@jwt_required()
 @leaderboard.route("/position", methods=['GET'])
 def get_leaderboard_position():
 

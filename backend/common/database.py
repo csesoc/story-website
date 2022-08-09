@@ -293,6 +293,13 @@ def addSolve(uid, pid, timeSolved, pointsGained):
     cur.execute(query)
     conn.commit()
 
+def addUser(uid, username, email, githubLink, password):
+    query = f""" 
+        INSERT INTO Users VALUES ({uid}, '{email}', '{githubLink}', '{username}', '{password}');
+    """
+    cur.execute(query)
+    conn.commit()
+
 def addReplica(compName, questionName, dayNum, partDescription, username, email, githubLink, password):
     query = f""" 
         INSERT INTO Users VALUES (1, '{email}', '{githubLink}', '{username}', '{password}');

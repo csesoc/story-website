@@ -1,4 +1,4 @@
-from backend.common.database import getNLeaderboard, searchLeaderboard
+import os
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request, get_jwt_identity
 
@@ -10,9 +10,12 @@ import re
 from common.exceptions import AuthError, RequestError
 from common.database import getCompetitionQuestions, getNLeaderboard, searchLeaderboard, getRankLeaderboard
 from models.user import User
+from itsdangerous import URLSafeTimedSerializer
 
 leaderboard = Blueprint("leaderboard", __name__)
+verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
+@jwt_required()
 @leaderboard.route("/entries", methods=['GET'])
 def get_leaderboard_twenty():
 
@@ -25,20 +28,18 @@ def get_leaderboard_twenty():
     # {
     #   leaderboard: score[]
     # }
+
+
     print('hello')
-
-
     try:
-        print('hello')
-        verify_jwt_in_request()
         print('hello1')
+        verify_jwt_in_request()
+        print('hello2')
+
         id = get_jwt_identity()
         competition = request.args.get('competition')
         if getCompetitionQuestions(competition) == {}:
-            raise RequestError("The competition doesn't exist")
-
-        print('hello2')
-        
+            raise RequestError("The competition doesn't exist")        
 
         prefix = request.args.get('string')
         returnList = []

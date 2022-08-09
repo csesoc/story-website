@@ -302,7 +302,7 @@ def addUser(uid, username, email, githubLink, password):
 
 def addReplica(compName, questionName, dayNum, partDescription, username, email, githubLink, password):
     query = f""" 
-        INSERT INTO Users VALUES (1, '{email}', '{githubLink}', '{username}', '{password}');
+        INSERT INTO Users VALUES (42, '{email}', '{githubLink}', '{username}', '{password}');
     """
     cur.execute(query)
     conn.commit()
@@ -330,7 +330,7 @@ def addReplica(compName, questionName, dayNum, partDescription, username, email,
 
     query = f""" 
         insert into Solves
-        values (1, 1, 100, 100);
+        values (42, 1, 100, 100);
     """
     cur.execute(query)
     conn.commit()

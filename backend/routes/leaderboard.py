@@ -29,14 +29,15 @@ def get_leaderboard_twenty():
     #   leaderboard: score[]
     # }
 
+    competition = request.get_json()['competition']
+    if getCompetitionQuestions(competition) == []:
+        raise RequestError("The competition doesn't exist")   
+
 
     try:
         verify_jwt_in_request()
 
-        id = get_jwt_identity()
-        competition = request.get_json()['competition']
-        if getCompetitionQuestions(competition) == []:
-            raise RequestError("The competition doesn't exist")        
+        id = get_jwt_identity()     
 
         prefix = request.args.get('string')
         returnList = []
@@ -84,13 +85,13 @@ def get_leaderboard_position():
     # {
     # position: integer
     # }
+    competition = request.get_json()['competition']
+    if getCompetitionQuestions(competition) == []:
+        raise RequestError("The competition doesn't exist")
 
     try:
         verify_jwt_in_request()
         id = get_jwt_identity()
-        competition = request.get_json()['competition']
-        if getCompetitionQuestions(competition) == []:
-            raise RequestError("The competition doesn't exist")
 
         return jsonify({
             "position": getRankLeaderboard(competition, id)

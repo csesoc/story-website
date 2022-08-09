@@ -18,14 +18,14 @@ def get_user_info(uid):
     return t
 
 
-def add_user(email, username, password, stars, score) -> int:
+def add_user(email, username, password) -> int:
     """Adds a user to the database, returning their ID."""
 
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        cursor.execute("INSERT INTO Users (email, username, password, numStars, score) VALUES (%s, %s, %s, %s, %s)",
-                       (email, username, password, stars, score))
+        cursor.execute("INSERT INTO Users (email, username, password) VALUES (%s, %s, %s)",
+                       (email, username, password))
         conn.commit()
 
         cursor.execute("SELECT uid FROM Users WHERE email = %s", (email,))
@@ -42,6 +42,12 @@ def fetch_id(email: str):
 
     with conn.cursor() as cursor:
         cursor.execute("SELECT uid FROM Users WHERE email = %s", (email,))
+        result = cursor.fetchone()
+
+        if result is None:
+            db.putconn(conn)
+            return None
+
         id = cursor.fetchone()[0]
 
     db.putconn(conn)

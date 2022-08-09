@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer
 from common.exceptions import AuthError, InvalidError, RequestError
 from common.redis import cache
 from database.database import db
-from database.user import add_user, email_exists, fetch_user, username_exists
+from database.user import add_user, email_exists, fetch_user, get_user_info, username_exists
 
 hasher = PasswordHasher(
     time_cost=2,
@@ -20,13 +20,13 @@ hasher = PasswordHasher(
 verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
 class User:
-    def __init__(self, id, email, username, password, stars=0, score=0):
+    def __init__(self, id, email, username, password, github_username=None):
         self.id = id
         self.email = email
         self.username = username
         self.password = password
-        self.stars = stars
-        self.score = score
+
+        self.github_username = github_username
 
     # Helper methods
 
@@ -88,7 +88,7 @@ class User:
         for key, value in result.items():
             stringified[key.decode()] = value.decode()
 
-        id = add_user(stringified["email"], stringified["username"], stringified["password"], 0, 0)
+        id = add_user(stringified["email"], stringified["username"], stringified["password"])
         return User(id, stringified["email"], stringified["username"], stringified["password"])
 
     @staticmethod
@@ -112,17 +112,12 @@ class User:
     @staticmethod
     def get(id):
         """Given a user's ID, fetches all of their information from the database."""
-        conn = db.getconn()
 
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM Users WHERE uid = %s", (id,))
-            fetched = cursor.fetchall()
+        result = get_user_info(id)
 
-            if fetched == []:
-                raise InvalidError(description=f"Requested user ID {id} doesn't exist")
+        if result is None:
+            raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-            id, email, username, stars, score, password = fetched[0]
+        id, email, github_username, username, password = result
 
-        db.putconn(conn)
-
-        return User(id, email, username, password, stars, score)
+        return User(id, email, username, password, github_username)

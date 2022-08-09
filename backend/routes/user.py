@@ -77,6 +77,7 @@ def set_name():
         return jsonify({})
     except:
         raise AuthError("Invalid token")
+
 """
 @user.route("/user/reset_email/request", methods=["POST"])
 def reset_email_request():

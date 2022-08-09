@@ -30,24 +30,21 @@ def get_leaderboard_twenty():
     # }
 
 
-    print('hello')
     try:
-        print('hello1')
         verify_jwt_in_request()
-        print('hello2')
 
         id = get_jwt_identity()
-        competition = request.args.get('competition')
-        if getCompetitionQuestions(competition) == {}:
+        competition = request.get_json()['competition']
+        if getCompetitionQuestions(competition) == []:
             raise RequestError("The competition doesn't exist")        
 
         prefix = request.args.get('string')
         returnList = []
 
         if (prefix is None or prefix == ''):
-            print('hello3')
 
             scores = getNLeaderboard(competition, 20)
+            print(scores)
             for (idx, score) in enumerate(scores):
                 returnList.append({
                   "github": score[0],
@@ -91,8 +88,8 @@ def get_leaderboard_position():
     try:
         verify_jwt_in_request()
         id = get_jwt_identity()
-        competition = request.args.get('competition')
-        if getCompetitionQuestions(competition) == {}:
+        competition = request.get_json()['competition']
+        if getCompetitionQuestions(competition) == []:
             raise RequestError("The competition doesn't exist")
 
         return jsonify({

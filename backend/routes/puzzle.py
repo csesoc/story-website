@@ -225,9 +225,9 @@ def puzzle_solve():
 #     try:
 #         verify_jwt_in_request()
 #         id = get_jwt_identity()
-#         competition = request.args.get('competition')
+#         competition = request.get_json()['competition']
 
-#         if getCompetitionQuestions(competition) == {}:
+#         if getCompetitionQuestions(competition) == []:
 #             raise RequestError("The competition doesn't exist")
 
 #         stats = getUserStatsPerComp(competition, id)

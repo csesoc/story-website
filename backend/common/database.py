@@ -220,10 +220,11 @@ def updateUsername(username, uid):
 # TODO: fix tiebreakers in rankings
 def getNLeaderboard(compName, n):
     query = f"""
-        select top {n} * from Stats s
+        select * from Stats s
         join Competitions c on s.cid = c.cid
         where c.name = '{compName}'
-        order by s.score DESC;
+        order by s.score DESC
+        limit {n};
     """
     cur.execute(query)
 
@@ -235,11 +236,12 @@ def getNLeaderboard(compName, n):
 # TODO: left outer join may not work! Needs to be tested on people with no puzzle input.
 def searchLeaderboard(compName, prefix, n):
     query = f"""
-        select top {n} u.github, u.username, s.numStats, s.score from Users u
+        select u.github, u.username, s.numStats, s.score from Users u
         left outer join Stats s on s.uid = u.uid
         join Competitions c on s.cid = c.cid
         where c.name = '{compName}' and (u.username like '{prefix}%' or u.github like '{prefix}%')
-        order by s.score DESC;
+        order by s.score DESC
+        limit {n};
     """
     cur.execute(query)
 

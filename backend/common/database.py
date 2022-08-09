@@ -225,6 +225,8 @@ def updateUsername(username, uid):
 
 # Finds top N of a leaderboard, where N is a positive integer
 # Assumes comp name is legit
+
+# TODO: fix tiebreakers in rankings
 def getNLeaderboard(compName, n):
     query = f""" 
         select top {n} * from Stats s
@@ -233,18 +235,44 @@ def getNLeaderboard(compName, n):
         order by s.score DESC;
     """
     cur.execute(query)
-    conn.commit()
+
+    return cur.fetchall()
+
 
 # Finds top N of a leaderboard of all users who begin with prefix
 # Assumes comp name is legit
 # TODO: left outer join may not work! Needs to be tested on people with no puzzle input.
 def searchLeaderboard(compName, prefix, n):
     query = f""" 
-        select top {n} * from Users u
+        select top {n} u.github, u.username, s.numStats, s.score from Users u
         left outer join Stats s on s.uid = u.uid
         join Competitions c on s.cid = c.cid
         where c.name = '{compName}' and (u.username like '{prefix}%' or u.github like '{prefix}%')
         order by s.score DESC;
     """
     cur.execute(query)
-    conn.commit()
+
+    return cur.fetchall()
+
+
+# Finds your ranking in a certain competition
+
+# TODO: not sure if this even works
+def getRankLeaderboard(compName, uid):
+    query = f""" 
+        select position 
+        from (
+            select *, row_number() over(
+                order by s.score DESC
+                ) 
+            as position 
+        from Users u
+        left outer join Stats s on s.uid = u.uid
+        join Competitions c on s.cid = c.cid
+        where c.name = '{compName}'
+        ) result 
+        where u.uid = '{uid}';
+    """
+    cur.execute(query)
+
+    return cur.fetchall()

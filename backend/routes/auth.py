@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, render_template, request, jsonify
 from flask_mail import Message
-from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
+from flask_jwt_extended import create_access_token, jwt_required, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
 
 from common.exceptions import AuthError
 from common.plugins import mail
@@ -97,3 +97,9 @@ def logout():
     unset_jwt_cookies(response)
 
     return response, 200
+
+@jwt_required()
+@auth.route("/protected", methods=["POST"])
+def protected():
+    verify_jwt_in_request()
+    return jsonify({}), 200

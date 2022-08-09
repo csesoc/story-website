@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from "react";
 import { Button, Container } from "react-bootstrap";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -86,3 +87,4 @@ const Leaderboard: React.FC<{}> = () => {
 };
 
 export default Leaderboard;
+>>>>>>> 5ee1ad1f481f4b493681f12663b7b6927179acd5

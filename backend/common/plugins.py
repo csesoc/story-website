@@ -1,7 +1,7 @@
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 
-from auth.user import User
+from models.user import User
 
 # JWT plugin
 

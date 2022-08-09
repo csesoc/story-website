@@ -7,8 +7,11 @@ from werkzeug.exceptions import HTTPException
 
 from auth.jwt import update_token
 from common.plugins import jwt, mail
+from database.database import db
 from routes.auth import auth
 from routes.puzzle import puzzle
+from routes.user import user
+
 
 def handle_exception(error):
     response = error.get_response()
@@ -23,9 +26,13 @@ def handle_exception(error):
 
     return response
 
+
 def create_app():
     app = Flask(__name__)
     CORS(app)
+
+    # Add database
+    app.config["DATABASE"] = db
 
     # Configure with all our custom settings
     app.config["JWT_SECRET_KEY"] = os.environ["FLASK_SECRET"]
@@ -35,7 +42,7 @@ def create_app():
     app.config["JWT_BLACKLIST_ENABLED"] = True
     app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["refresh"]
     app.config["JWT_COOKIE_CSRF_PROTECT"] = True
-    app.config["JWT_TOKEN_LOCATION"] = "cookies"
+    app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 
     # TODO: convert to CSESoc SMTP server (if we have one) once we get that
     app.config["MAIL_SERVER"] = "smtp.mailtrap.io"
@@ -54,11 +61,13 @@ def create_app():
     # Register smaller parts of the API
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(puzzle, url_prefix="/puzzle")
+    app.register_blueprint(user, url_prefix="/user")
 
     # Register our error handler
     app.register_error_handler(HTTPException, handle_exception)
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()

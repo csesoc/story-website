@@ -25,6 +25,18 @@ cur = conn.cursor()
 
 # IMPORTANT: executing a query is expensive, so we would rather write more functions than write more execute queries.
 
+# # DO NOT EVER EXECUTE THIS FUNCTION BRUH
+# def dropDatabase():
+#     query = f"""
+#         SELECT 'DROP TABLE IF EXISTS "' || tablename || '" CASCADE;' 
+#         from
+#         pg_tables WHERE schemaname = 'advent';
+#     """
+#     cur.execute(query)
+#     conn.commit()
+
+# IMPORTANT: executing a query is expensive, so we would rather write more functions than write more execute queries.
+
 # Get all the information about a question given its day number
 # Returns all information in the form of a dictionary
 # You might want to use this function to find the total number of parts in a question, and then use getPartInfo
@@ -32,7 +44,7 @@ def getQuestionInfo(compName, dayNum):
     query = f"""
         select * from Questions q
         join Competitions c on q.cid = c.cid 
-        where q.dayNum = {dayNum} and c.name = {compName};
+        where q.dayNum = {dayNum} and c.name = '{compName}';
     """
     cur.execute(query)
 
@@ -47,7 +59,7 @@ def getQuestionParts(compName, dayNum):
         select * from Parts p 
         join Questions q on p.qid = q.qid 
         join Competitions c on q.cid = c.cid 
-        where q.dayNum = {dayNum} and c.name = {compName};
+        where q.dayNum = {dayNum} and c.name = '{compName}';
     """
     cur.execute(query)
 
@@ -67,7 +79,7 @@ def getPartInfo(compName, dayNum, partNum):
         select * from Parts p 
         join Questions q on p.qid = q.qid 
         join Competitions c on q.cid = c.cid 
-        where q.dayNum = {dayNum} and p.partNum = {partNum} and c.name = {compName};
+        where q.dayNum = {dayNum} and p.partNum = {partNum} and c.name = '{compName}';
     """
     cur.execute(query)
 
@@ -82,7 +94,7 @@ def getCompetitionQuestions(compName):
         select * from Parts p 
         join Questions q on p.qid = q.qid 
         join Competitions c on q.cid = c.cid 
-        where c.name = {compName};
+        where c.name = '{compName}';
     """
     cur.execute(query)
 
@@ -101,7 +113,7 @@ def getInput(compName, dayNum, uid):
         select i.input from Inputs i
         join Questions q on i.qid = q.qid 
         join Competitions c on q.cid = c.cid 
-        where q.dayNum = {dayNum} and i.uid = {uid} and c.name = {compName};
+        where q.dayNum = {dayNum} and i.uid = {uid} and c.name = '{compName}';
     """
     cur.execute(query)
 
@@ -119,7 +131,7 @@ def checkInput(compName, dayNum, uid, solution):
         select i.input, i.solution from Inputs i
         join Questions q on i.qid = q.qid 
         join Competitions c on q.cid = c.cid 
-        where q.dayNum = {dayNum} and i.uid = {uid} and c.name = {compName};
+        where q.dayNum = {dayNum} and i.uid = {uid} and c.name = '{compName}';
     """
     cur.execute(query)
 
@@ -155,11 +167,28 @@ def getUserStatsPerComp(compName, uid):
     # Best to look up examples :D 
     # Use this information to deduce whether a user has solved a part or not
     query = f"""
-        select q.dayNum, p.partNum, s.points, s.solveTime from Solves s
+        select u.username, u.github, q.dayNum, p.partNum, s.points, s.solveTime from Users u
+        join Solves s on s.uid = u.uid
         right outer join Parts p on s.pid = p.pid
         join Questions q on p.qid = q.qid 
         join Competitions c on q.cid = c.cid 
-        where i.uid = {uid} and c.name = {compName};
+        where s.uid = {uid} and c.name = '{compName}';
+    """
+    cur.execute(query)
+
+    return cur.fetchall()
+
+# Get only the number of stars and points for a user.
+# Returns extremely simple info
+def getBasicUserStatsPerComp(compName, uid):
+
+    # A right outer join returns all the results from the parts table, even if there is no solves
+    # Best to look up examples :D 
+    # Use this information to deduce whether a user has solved a part or not
+    query = f"""
+        select u.username, u.github, s.numStars, s.score from Stats s
+        right outer join Users u
+        where s.uid = {uid} and c.name = '{compName}';
     """
     cur.execute(query)
 
@@ -188,30 +217,12 @@ def getAllCompetitions():
 def updateUsername(username, uid):
     query = f"""
         update Users
-        set username = {username}
+        set username = '{username}'
         where uid = {uid};
     """
     cur.execute(query)
     conn.commit()
-
-# DO NOT EVER EXECUTE THIS FUNCTION BRUH
-def dropDatabase():
-    query = f"""
-        SELECT 'DROP TABLE IF EXISTS "' || tablename || '" CASCADE;' 
-        from
-        pg_tables WHERE schemaname = 'advent';
-    """
-    cur.execute(query)
-    conn.commit()
-
-def clear_database():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    for table in TABLES:
-        cursor.execute(f"TRUNCATE TABLE {table} CASCADE")
-
-    conn.commit()
-
+    '''
     cursor.close()
     conn.close()
+    '''

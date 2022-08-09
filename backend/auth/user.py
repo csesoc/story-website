@@ -39,7 +39,7 @@ class User:
     @staticmethod
     def _add_user(conn, cursor, email, username, password):
         """Given the details of a user, adds them to the database."""
-        cursor.execute("INSERT INTO Users (email, username, password, numStars, score) VALUES (%s, %s, %s, 0, 0)",
+        cursor.execute("INSERT INTO Users (email, username, password) VALUES (%s, %s, %s, 0, 0)",
                        (email, username, password))
         conn.commit()
 

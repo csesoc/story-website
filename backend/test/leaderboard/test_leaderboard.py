@@ -1,4 +1,4 @@
-from common.database import addCompetition, addReplica
+from common.database import addCompetition, addReplica, addSolve
 import pytest
 
 # Import for pytest
@@ -101,3 +101,33 @@ def test_zero_search_on_leaderboard(client):
 
     assert response.status_code == 200
     assert len(response.json.leaderboard) == 0
+
+def test_correct_order_on_leaderboardA(client):
+    clear_all()
+
+    addReplica("Alice in Pointerland", "IMC Banner I", 1, "good luck for trials", "asdfg", "zelda", "asdfg@gmail.com", "noone")
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+    addSolve(2, 1, 1000, 99)
+
+    response = client.post("/leaderboard/entries", json={
+        "competition": "Alice in Pointerland",
+        "search": "vanam"
+    })
+
+    assert response.status_code == 200
+    assert (response.json.leaderboard[0]).username == "asdfg"
+
+def test_correct_order_on_leaderboardB(client):
+    clear_all()
+
+    addReplica("Alice in Pointerland", "IMC Banner I", 1, "good luck for trials", "asdfg", "zelda", "asdfg@gmail.com", "noone")
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+    addSolve(2, 1, 1000, 101)
+
+    response = client.post("/leaderboard/entries", json={
+        "competition": "Alice in Pointerland",
+        "search": "vanam"
+    })
+
+    assert response.status_code == 200
+    assert (response.json.leaderboard[0]).username == "asdf"

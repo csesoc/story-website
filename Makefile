@@ -40,3 +40,6 @@ restart:
 
 test-backend:
 	docker-compose exec backend pytest . $(args)
+
+test-puzzle:
+	docker-compose exec backend pytest ./test/puzzle $(args)

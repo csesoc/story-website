@@ -28,7 +28,7 @@ cur = conn.cursor()
 # # DO NOT EVER EXECUTE THIS FUNCTION BRUH
 # def dropDatabase():
 #     query = f"""
-#         SELECT 'DROP TABLE IF EXISTS "' || tablename || '" CASCADE;' 
+#         SELECT 'DROP TABLE IF EXISTS "' || tablename || '" CASCADE;'
 #         from
 #         pg_tables WHERE schemaname = 'advent';
 #     """
@@ -43,7 +43,7 @@ cur = conn.cursor()
 def getQuestionInfo(compName, dayNum):
     query = f"""
         select * from Questions q
-        join Competitions c on q.cid = c.cid 
+        join Competitions c on q.cid = c.cid
         where q.dayNum = {dayNum} and c.name = '{compName}';
     """
     cur.execute(query)
@@ -56,9 +56,9 @@ def getQuestionInfo(compName, dayNum):
 # Returns all information in the form of a list of dictionaries
 def getQuestionParts(compName, dayNum):
     query = f"""
-        select * from Parts p 
-        join Questions q on p.qid = q.qid 
-        join Competitions c on q.cid = c.cid 
+        select * from Parts p
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
         where q.dayNum = {dayNum} and c.name = '{compName}';
     """
     cur.execute(query)
@@ -66,9 +66,9 @@ def getQuestionParts(compName, dayNum):
     partsList = []
     for t in cur.fetchall():
         partsList.append(t)
-    
+
     # sort the list based off the part number
-    sortedList = sorted(partsList, key=lambda x: x['partNum']) 
+    sortedList = sorted(partsList, key=lambda x: x['partNum'])
     return sortedList
 
 # Get all the information about a part of a question (e.g. day 1 part 2) given the day number and part number
@@ -76,9 +76,9 @@ def getQuestionParts(compName, dayNum):
 # Returns all information in the form of a dictionary
 def getPartInfo(compName, dayNum, partNum):
     query = f"""
-        select * from Parts p 
-        join Questions q on p.qid = q.qid 
-        join Competitions c on q.cid = c.cid 
+        select * from Parts p
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
         where q.dayNum = {dayNum} and p.partNum = {partNum} and c.name = '{compName}';
     """
     cur.execute(query)
@@ -91,9 +91,9 @@ def getPartInfo(compName, dayNum, partNum):
 # Returns None if the competition does not exist
 def getCompetitionQuestions(compName):
     query = f"""
-        select * from Parts p 
-        join Questions q on p.qid = q.qid 
-        join Competitions c on q.cid = c.cid 
+        select * from Parts p
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
         where c.name = '{compName}';
     """
     cur.execute(query)
@@ -111,8 +111,8 @@ def generateInput(dayNum, uid):
 def getInput(compName, dayNum, uid):
     query = f"""
         select i.input from Inputs i
-        join Questions q on i.qid = q.qid 
-        join Competitions c on q.cid = c.cid 
+        join Questions q on i.qid = q.qid
+        join Competitions c on q.cid = c.cid
         where q.dayNum = {dayNum} and i.uid = {uid} and c.name = '{compName}';
     """
     cur.execute(query)
@@ -121,7 +121,7 @@ def getInput(compName, dayNum, uid):
     return t['input'] if t is not None else t
 
 # Gets the input for a day number and user, if it exists
-# Returns a tuple: 
+# Returns a tuple:
 #   the tuple is None if the value does not exist
 #   the first entry of the tuple is True if the solution is correct (and exists), False otherwise
 #   the second entry of the tuple is a string outlining the reason if the solution was incorrect
@@ -129,8 +129,8 @@ def getInput(compName, dayNum, uid):
 def checkInput(compName, dayNum, uid, solution):
     query = f"""
         select i.input, i.solution from Inputs i
-        join Questions q on i.qid = q.qid 
-        join Competitions c on q.cid = c.cid 
+        join Questions q on i.qid = q.qid
+        join Competitions c on q.cid = c.cid
         where q.dayNum = {dayNum} and i.uid = {uid} and c.name = '{compName}';
     """
     cur.execute(query)
@@ -147,31 +147,19 @@ def checkInput(compName, dayNum, uid, solution):
     # note: for more advanced processing, we might consider having a timeout if a user tries too many things too quickly
     # but idk how to implement this too well
 
-# Get all the information about a user given their uid
-# Returns all information in the form of a dictionary
-def getUserInfo(uid):
-    query = f"""
-        select * from Users where uid = {uid};
-    """
-    cur.execute(query)
-
-    # only one entry should be returned since day number is unique
-    t = cur.fetchone()
-    return t
-
 # Get all the information about a user's stats in a certain competition
 # Returns all information in the form of a list of 'solved objects'
 def getUserStatsPerComp(compName, uid):
 
     # A right outer join returns all the results from the parts table, even if there is no solves
-    # Best to look up examples :D 
+    # Best to look up examples :D
     # Use this information to deduce whether a user has solved a part or not
     query = f"""
         select u.username, u.github, q.dayNum, p.partNum, s.points, s.solveTime from Users u
         join Solves s on s.uid = u.uid
         right outer join Parts p on s.pid = p.pid
-        join Questions q on p.qid = q.qid 
-        join Competitions c on q.cid = c.cid 
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
         where s.uid = {uid} and c.name = '{compName}';
     """
     cur.execute(query)
@@ -183,12 +171,15 @@ def getUserStatsPerComp(compName, uid):
 def getBasicUserStatsPerComp(compName, uid):
 
     # A right outer join returns all the results from the parts table, even if there is no solves
-    # Best to look up examples :D 
+    # Best to look up examples :D
     # Use this information to deduce whether a user has solved a part or not
     query = f"""
         select u.username, u.github, s.numStars, s.score from Stats s
         right outer join Users u
         where s.uid = {uid} and c.name = '{compName}';
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
+        where i.uid = {uid} and c.name = {compName};
     """
     cur.execute(query)
 
@@ -217,7 +208,7 @@ def getAllCompetitions():
 def updateUsername(username, uid):
     query = f"""
         update Users
-        set username = '{username}'
+        set username = {username}
         where uid = {uid};
     """
     cur.execute(query)
@@ -228,7 +219,7 @@ def updateUsername(username, uid):
 
 # TODO: fix tiebreakers in rankings
 def getNLeaderboard(compName, n):
-    query = f""" 
+    query = f"""
         select top {n} * from Stats s
         join Competitions c on s.cid = c.cid
         where c.name = '{compName}'
@@ -243,7 +234,7 @@ def getNLeaderboard(compName, n):
 # Assumes comp name is legit
 # TODO: left outer join may not work! Needs to be tested on people with no puzzle input.
 def searchLeaderboard(compName, prefix, n):
-    query = f""" 
+    query = f"""
         select top {n} u.github, u.username, s.numStats, s.score from Users u
         left outer join Stats s on s.uid = u.uid
         join Competitions c on s.cid = c.cid
@@ -259,18 +250,18 @@ def searchLeaderboard(compName, prefix, n):
 
 # TODO: not sure if this even works
 def getRankLeaderboard(compName, uid):
-    query = f""" 
-        select position 
+    query = f"""
+        select position
         from (
             select *, row_number() over(
                 order by s.score DESC
-                ) 
-            as position 
+                )
+            as position
         from Users u
         left outer join Stats s on s.uid = u.uid
         join Competitions c on s.cid = c.cid
         where c.name = '{compName}'
-        ) result 
+        ) result
         where u.uid = '{uid}';
     """
     cur.execute(query)
@@ -334,3 +325,15 @@ def addReplica(compName, questionName, dayNum, partDescription, username, email,
     """
     cur.execute(query)
     conn.commit()
+
+def getNumSolved(compName, dayNum, partNum, uid):
+    query = f"""
+        select count(*) from Solves s
+        join Parts p on p.pid = s.pid
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
+        where c.name = '{compName}' and s.uid = {uid} and p.partNum = {partNum} and q.dayNum = {dayNum};
+    """
+    cur.execute(query)
+
+    return cur.fetchall()

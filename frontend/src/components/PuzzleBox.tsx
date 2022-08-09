@@ -9,7 +9,7 @@ import {puzzle, part} from '../pages/Calendar';
 
 function PuzzleBox (puzzleInfo : puzzle) {
   const navigate = useNavigate();
-  
+
   let numStars : number = 0;
   for (let p of puzzleInfo.partsInfo) {
     numStars += p.solved ? 1 : 0;
@@ -27,7 +27,7 @@ function PuzzleBox (puzzleInfo : puzzle) {
         <span>
           {numStars} {' Stars'}
         </span>
-        
+
 
       </div>
     </>

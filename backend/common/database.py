@@ -276,3 +276,54 @@ def getRankLeaderboard(compName, uid):
     cur.execute(query)
 
     return cur.fetchall()
+
+def addCompetition(compName):
+    query = f""" 
+        insert into Competitions
+        values (1, '{compName}', 0, 0);
+    """
+    cur.execute(query)
+    conn.commit()
+
+def addSolve(uid, pid, timeSolved, pointsGained):
+    query = f""" 
+        insert into Solves
+        values ({uid}, {pid}, {timeSolved}, {pointsGained});
+    """
+    cur.execute(query)
+    conn.commit()
+
+def addReplica(compName, questionName, dayNum, partDescription, username, email, githubLink, password):
+    query = f""" 
+        INSERT INTO Users VALUES (1, '{email}', '{githubLink}', '{username}', '{password}');
+    """
+    cur.execute(query)
+    conn.commit()
+
+    query = f""" 
+        insert into Competitions
+        values (1, '{compName}', 0, 0);
+    """
+    cur.execute(query)
+    conn.commit()
+
+    query = f""" 
+        insert into Questions
+        values (1, 1, 0, '{questionName}', '.-.', {dayNum});
+    """
+    cur.execute(query)
+    conn.commit()
+
+    query = f""" 
+        insert into Parts
+        values (1, 1, '{partDescription}', 1, 0, '2008-11-11 13:23:44');
+    """
+    cur.execute(query)
+    conn.commit()
+
+    query = f""" 
+        insert into Solves
+        values (1, 1, 100, 100);
+    """
+    cur.execute(query)
+    conn.commit()

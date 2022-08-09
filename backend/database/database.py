@@ -26,3 +26,4 @@ def clear_database():
         conn.commit()
     
     db.putconn(conn)
+

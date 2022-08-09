@@ -28,14 +28,19 @@ def get_leaderboard_twenty():
     # }
 
     try:
+        print('hi')
+
         verify_jwt_in_request()
         id = get_jwt_identity()
         competition = request.args.get('competition')
+        print('hi')
+        print(competition)
         if getCompetitionQuestions(competition) == {}:
             raise RequestError("The competition doesn't exist")
 
         prefix = request.args.get('string')
         returnList = []
+        print(prefix)
 
         if (prefix is None or prefix == ''):
             scores = getNLeaderboard(competition, 20)

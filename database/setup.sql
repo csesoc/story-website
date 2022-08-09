@@ -29,7 +29,7 @@ CREATE TABLE Questions (
     cid          SERIAL REFERENCES Competitions(cid),
     numParts     INTEGER NOT NULL DEFAULT 0,
     name         TEXT NOT NULL,
-    pixelArtLine TEXT NOT NULL,
+    pixelArtLine TEXT,
     dayNum       INTEGER UNIQUE NOT NULL
 );
 
@@ -56,9 +56,9 @@ CREATE TABLE Inputs (
 
 DROP TABLE IF EXISTS Solves;
 CREATE TABLE Solves (
-    uid         INTEGER REFERENCES Users(uid),
-    pid         INTEGER REFERENCES Parts(pid),
-    solveTime   TIME NOT NULL,
+    uid         SERIAL REFERENCES Users(uid),
+    pid         SERIAL REFERENCES Parts(pid),
+    solveTime   BIGINT NOT NULL,
     points      INTEGER NOT NULL,
     PRIMARY KEY (uid, pid)
 );
@@ -77,13 +77,18 @@ $$ LANGUAGE plpgsql;
 
 -- TODO: Fix triggers! -----------------------------------------------------------------------------------------------------------------------
 
+create unique index statsIndex on Stats (uid, cid);
+
 -- Creates a trigger to update stats whenever solves is updated
 CREATE OR REPLACE FUNCTION update_stats() RETURNS trigger AS $$
 BEGIN
-    update  Stats 
-    set     score = score + new.points, numStars = numStars + 1
-    where   Stats.uid = new.uid and Stats.cid = 
-        (select c.cid from Competitions c join Questions q on q.cid = c.cid join Parts p on p.qid = q.qid where p.pid = new.pid);
+    insert into Stats as s
+    values (new.uid, (select c.cid from Competitions c join Questions q on q.cid = c.cid join Parts p on p.qid = q.qid where p.pid = new.pid), new.points, 1)
+    on conflict (uid, cid)
+    do
+        update set  score = s.score + new.points, numStars = s.numStars + 1
+        where       s.uid = new.uid and s.cid = 
+            (select c.cid from Competitions c join Questions q on q.cid = c.cid join Parts p on p.qid = q.qid where p.pid = new.pid);
     return  new;
 END;
 $$ LANGUAGE plpgsql;
@@ -97,7 +102,7 @@ CREATE OR REPLACE FUNCTION update_comp_questions() RETURNS trigger AS $$
 BEGIN
     update  Competitions
     set     numQuestions = numQuestions + 1
-    where   Competitions.cid = new.cid
+    where   Competitions.cid = new.cid;
     return  new;
 END;
 $$ LANGUAGE plpgsql;
@@ -111,7 +116,7 @@ CREATE OR REPLACE FUNCTION update_question_parts() RETURNS trigger AS $$
 BEGIN
     update  Questions
     set     numParts = numParts + 1
-    where   Questions.qid = new.qid
+    where   Questions.qid = new.qid;
     return  new;
 END;
 $$ LANGUAGE plpgsql;
@@ -125,7 +130,7 @@ CREATE OR REPLACE FUNCTION update_parts_solved() RETURNS trigger AS $$
 BEGIN
     update  Parts
     set     numSolved = numSolved + 1
-    where   Parts.pid = new.pid
+    where   Parts.pid = new.pid;
     return  new;
 END;
 $$ LANGUAGE plpgsql;

@@ -2,7 +2,7 @@ from common.exceptions import RequestError
 import pytest
 
 # Import for pytest
-from test.helpers import clear_all, db_add_user
+from test.helpers import clear_all, db_add_user, db_add_part, db_add_question
 from test.fixtures import app, client
 
 def test_no_competition(client):
@@ -15,7 +15,8 @@ def test_no_competition(client):
         "password": "foobar"
     })
 
-    assert response.status_code == 200
+    qid = db_add_question("day 1", 1, 1)
+    db_add_part(qid, 1)
 
     response = client.get("/puzzle/all", json={
         "competition": "Birds can't fly"
@@ -35,7 +36,8 @@ def test_puzzle_all(client):
         "password": "foobar"
     })
 
-    assert response.status_code == 200
+    qid = db_add_question("day 1", 1, 1)
+    db_add_part(qid, 1)
 
     response = client.get("/puzzle/all", json={
         "competition": "2022 Advent of Code"
@@ -56,7 +58,8 @@ def test_puzzle_no_day(client):
         "password": "foobar"
     })
 
-    assert response.status_code == 200
+    qid = db_add_question("day 1", 1, 1)
+    db_add_part(qid, 1)
 
     response = client.get("/puzzle/details", json={
         "competition": "2022 Advent of Code",
@@ -75,7 +78,8 @@ def test_puzzle_details(client):
         "password": "foobar"
     })
 
-    assert response.status_code == 200
+    qid = db_add_question("day 1", 1, 1)
+    db_add_part(qid, 1)
 
     response = client.get("/puzzle/details", json={
         "competition": "2022 Advent of Code",

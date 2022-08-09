@@ -17,7 +17,7 @@ CREATE TABLE Competitions (
 
 DROP TABLE IF EXISTS Stats;
 CREATE TABLE Stats (
-    uid         SERIAL REFERENCES Users(uid), 
+    uid         SERIAL REFERENCES Users(uid),
     cid         SERIAL REFERENCES Competitions(cid),
     numStars    INTEGER NOT NULL DEFAULT 0,
     score       INTEGER NOT NULL DEFAULT 0
@@ -29,7 +29,7 @@ CREATE TABLE Questions (
     cid          SERIAL REFERENCES Competitions(cid),
     numParts     INTEGER NOT NULL DEFAULT 2,
     name         TEXT NOT NULL,
-    pixelArtLine TEXT NOT NULL,
+    pixelArtLine TEXT,
     dayNum       INTEGER UNIQUE NOT NULL
 );
 

@@ -63,7 +63,7 @@ class Day1(Day):
         return self.id % 5
 
     def setpart1Status(self):
-        return checkSolve("")
+        return checkSolve("2022 Advent of Code", 1, 1, self.id)
 
     def setPart1Answer(self):
         answer = ""

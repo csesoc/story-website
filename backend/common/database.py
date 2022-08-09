@@ -147,18 +147,6 @@ def checkInput(compName, dayNum, uid, solution):
     # note: for more advanced processing, we might consider having a timeout if a user tries too many things too quickly
     # but idk how to implement this too well
 
-# Get all the information about a user given their uid
-# Returns all information in the form of a dictionary
-def getUserInfo(uid):
-    query = f"""
-        select * from Users where uid = {uid};
-    """
-    cur.execute(query)
-
-    # only one entry should be returned since day number is unique
-    t = cur.fetchone()
-    return t
-
 # Get all the information about a user's stats in a certain competition
 # Returns all information in the form of a list of 'solved objects'
 def getUserStatsPerComp(compName, uid):
@@ -189,6 +177,9 @@ def getBasicUserStatsPerComp(compName, uid):
         select u.username, u.github, s.numStars, s.score from Stats s
         right outer join Users u
         where s.uid = {uid} and c.name = '{compName}';
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
+        where i.uid = {uid} and c.name = {compName};
     """
     cur.execute(query)
 
@@ -217,7 +208,7 @@ def getAllCompetitions():
 def updateUsername(username, uid):
     query = f"""
         update Users
-        set username = '{username}'
+        set username = {username}
         where uid = {uid};
     """
     cur.execute(query)

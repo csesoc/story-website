@@ -22,7 +22,11 @@ def clear_database():
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        cursor.execute(f"""SELECT truncate_tables();""")
+        cursor.execute("""SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'""")
+
+        for table in cursor.fetchall():
+            cursor.execute(f"TRUNCATE TABLE {table[0]} CASCADE")
+
         conn.commit()
-    
+
     db.putconn(conn)

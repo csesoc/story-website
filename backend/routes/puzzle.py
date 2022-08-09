@@ -1,113 +1,217 @@
+from xml.sax.handler import all_properties
+from common.exceptions import RequestError, AuthError
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request, get_jwt_identity
-
+from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from puzzles.calendar.calendar import calendar
-
-import re
-
-from common.exceptions import AuthError, RequestError
-from common.database import getCompetitionQuestions, getUserStatsPerComp, updateUsername
-from database.user import username_exists
-from models.user import User
 
 puzzle = Blueprint("puzzle", __name__)
 
-# @puzzle.route("/description", methods=["GET"])
-# def description():
-#     year = int(request.args.get("year"))
-#     day = int(request.args.get("day"))
-#     task = calendar[year][day](0)
-
-#     return jsonify({
-#         "description": task.description()
-#     })
-
-@puzzle.route("/all", methods=['GET'])
-def get_all_puzzles():
-
-    # {
-    # token: token (in cookies),
-    # competition: string,
-    # day: integer
-    # }
-
-    # {
-    # puzzles : puzzle[]
-    # }
-
+def getID():
     try:
         verify_jwt_in_request()
         id = get_jwt_identity()
-        pass
     except:
         raise AuthError("Invalid token")
 
-@puzzle.route("/details", methods=['GET'])
-def get_puzzle_details():
+    return id
 
-    # {
-    # token: token (in cookies),
-    # competition: string,
-    # day: integer
-    # }
 
-    # {
-    # n_parts: integer,
-    # name: string,
-    # dayNum: integer,
-    # parts: part[]
-    # }
+@puzzle.route("/description", methods=["GET"])
+def description():
+    year = int(request.args.get("year"))
+    day = int(request.args.get("day"))
+    task = calendar[year][day](0)
+
+    return jsonify({
+        "description": task.description()
+    })
+
+@jwt_required()
+@puzzle.route("/all", methods=["GET"])
+def puzzle_all():
+    id = getID()
+
+    competition = request.get_json()["competition"]
+    try:
+        days = calendar[competition]
+    except:
+        raise RequestError("This competition does not exist")
+
+    all_puzzles = []
+
+    for day in days:
+        new = day(id)
+        all_puzzles.append(new.description())
+    return jsonify({
+        "puzzles": all_puzzles
+    })
+
+@jwt_required()
+@puzzle.route("/details", methods=["GET"])
+def puzzle_details():
+    id = getID()
+    competition = str(request.get_json()["competition"])
+    dayNum = int(request.get_json()["dayNum"])
 
     try:
-        verify_jwt_in_request()
-        id = get_jwt_identity()
-        pass
+        days = calendar[competition]
     except:
-        raise AuthError("Invalid token")
-
-@puzzle.route("/all", methods=['GET'])
-def get_puzzle_input():
-
-    # {
-    # token: token (in cookies),
-    # competition: string,
-    # day: integer
-    # }
-
-    # {
-    #   input: string
-    # }
-
-    try:
-        verify_jwt_in_request()
-        id = get_jwt_identity()
-        pass
-    except:
-        raise AuthError("Invalid token")
-
-@puzzle.route("/all", methods=['POST'])
-def solve_puzzle():
-
-    # {
-    # token: token (in cookies),
-    # competition: string,
-    # day: integer,
-    # part: integer,
-    # solution: string
-    # }
-
-    # {
-    # correct: boolean,
-    # reason: string
-    # }
+        raise RequestError("This competition does not exist")
 
 
     try:
-        verify_jwt_in_request()
-        id = get_jwt_identity()
-        pass
+        day = days[dayNum - 1]
     except:
-        raise AuthError("Invalid token")
+        raise RequestError("This day does not exist")
+
+    return jsonify(
+        day(id).description() #changed outut structure a bit
+    )
+
+@jwt_required()
+@puzzle.route("/input", methods=["GET"])
+def puzzle_input():
+    id = getID()
+
+    competition = str(request.get_json()["competition"])
+    dayNum = int(request.get_json()["dayNum"])
+    part = str(request.get_json()["part"])
+
+    try:
+        days = calendar[competition]
+    except:
+        raise RequestError("This competition does not exist")
+
+
+    try:
+        day = days[dayNum - 1]
+    except:
+        raise RequestError("This day does not exist")
+
+    return jsonify({
+        "input": day(id).generate_input(part)
+    })
+
+@jwt_required()
+@puzzle.route("/solve", methods=["POST"])
+def puzzle_solve():
+    id = getID()
+    competition = str(request.get_json()["competition"])
+    dayNum = int(request.get_json()["dayNum"])
+    part = str(request.get_json()["part"]) #assume this will be there
+    solution = int(request.get_json()["solution"])
+
+    try:
+        days = calendar[competition]
+    except:
+        raise RequestError("This competition does not exist")
+
+
+    try:
+        day = days[dayNum - 1]
+    except:
+        raise RequestError("This day does not exist")
+
+    return jsonify(day(id).verify(solution, part))
+
+# puzzle = Blueprint("puzzle", __name__)
+
+# # @puzzle.route("/description", methods=["GET"])
+# # def description():
+# #     year = int(request.args.get("year"))
+# #     day = int(request.args.get("day"))
+# #     task = calendar[year][day](0)
+
+# #     return jsonify({
+# #         "description": task.description()
+# #     })
+
+# @puzzle.route("/all", methods=['GET'])
+# def get_all_puzzles():
+
+#     # {
+#     # token: token (in cookies),
+#     # competition: string,
+#     # day: integer
+#     # }
+
+#     # {
+#     # puzzles : puzzle[]
+#     # }
+
+#     try:
+#         verify_jwt_in_request()
+#         id = get_jwt_identity()
+#         pass
+#     except:
+#         raise AuthError("Invalid token")
+
+# @puzzle.route("/details", methods=['GET'])
+# def get_puzzle_details():
+
+#     # {
+#     # token: token (in cookies),
+#     # competition: string,
+#     # day: integer
+#     # }
+
+#     # {
+#     # n_parts: integer,
+#     # name: string,
+#     # dayNum: integer,
+#     # parts: part[]
+#     # }
+
+#     try:
+#         verify_jwt_in_request()
+#         id = get_jwt_identity()
+#         pass
+#     except:
+#         raise AuthError("Invalid token")
+
+# @puzzle.route("/all", methods=['GET'])
+# def get_puzzle_input():
+
+#     # {
+#     # token: token (in cookies),
+#     # competition: string,
+#     # day: integer
+#     # }
+
+#     # {
+#     #   input: string
+#     # }
+
+#     try:
+#         verify_jwt_in_request()
+#         id = get_jwt_identity()
+#         pass
+#     except:
+#         raise AuthError("Invalid token")
+
+# @puzzle.route("/all", methods=['POST'])
+# def solve_puzzle():
+
+#     # {
+#     # token: token (in cookies),
+#     # competition: string,
+#     # day: integer,
+#     # part: integer,
+#     # solution: string
+#     # }
+
+#     # {
+#     # correct: boolean,
+#     # reason: string
+#     # }
+
+
+#     try:
+#         verify_jwt_in_request()
+#         id = get_jwt_identity()
+#         pass
+#     except:
+#         raise AuthError("Invalid token")
 
 
 
@@ -127,7 +231,7 @@ def solve_puzzle():
 #             raise RequestError("The competition doesn't exist")
 
 #         stats = getUserStatsPerComp(competition, id)
-        
+
 #         ## find a way to get the stat infos, they are spread across multiple tables.
 
 #         return jsonify({
@@ -144,7 +248,7 @@ def solve_puzzle():
 #     username: string
 #     }
 #     '''
-    
+
 #     try:
 #         print('hello')
 #         print('hello0')

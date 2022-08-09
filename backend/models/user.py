@@ -8,8 +8,7 @@ from itsdangerous import URLSafeTimedSerializer
 
 from common.exceptions import AuthError, InvalidError, RequestError
 from common.redis import cache
-from database.database import db
-from database.user import add_user, email_exists, fetch_user, username_exists
+from database.user import add_user, email_exists, fetch_user, get_user_info, username_exists
 
 hasher = PasswordHasher(
     time_cost=2,
@@ -20,11 +19,13 @@ hasher = PasswordHasher(
 verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
 class User:
-    def __init__(self, id, email, username, password):
+    def __init__(self, id, email, username, password, github_username=None):
         self.id = id
         self.email = email
         self.username = username
         self.password = password
+
+        self.github_username = github_username
 
     # Helper methods
 
@@ -100,27 +101,22 @@ class User:
         result = fetch_user(normalised)
 
         try:
-            id, email, username, github, hashed = result
+            id, email, github_username, username, hashed = result
             hasher.verify(hashed, password)
         except (TypeError, VerificationError) as e:
             raise AuthError(description="Invalid email or password") from e
 
-        return User(id, email, username, hashed)
+        return User(id, email, username, hashed, github_username)
 
     @staticmethod
     def get(id):
         """Given a user's ID, fetches all of their information from the database."""
-        conn = db.getconn()
 
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM Users WHERE uid = %s", (id,))
-            fetched = cursor.fetchall()
+        result = get_user_info(id)
 
-            if fetched == []:
-                raise InvalidError(description=f"Requested user ID {id} doesn't exist")
+        if result is None:
+            raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-            id, email, github, username, password = fetched[0]
+        id, email, github_username, username, password = result
 
-        db.putconn(conn)
-
-        return User(id, email, username, password)
+        return User(id, email, username, password, github_username)

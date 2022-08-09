@@ -147,18 +147,6 @@ def checkInput(compName, dayNum, uid, solution):
     # note: for more advanced processing, we might consider having a timeout if a user tries too many things too quickly
     # but idk how to implement this too well
 
-# Get all the information about a user given their uid
-# Returns all information in the form of a dictionary
-def getUserInfo(uid):
-    query = f"""
-        select * from Users where uid = {uid};
-    """
-    cur.execute(query)
-
-    # only one entry should be returned since day number is unique
-    t = cur.fetchone()
-    return t
-
 # Get all the information about a user's stats in a certain competition
 # Returns all information in the form of a list of 'solved objects'
 def getUserStatsPerComp(compName, uid):
@@ -172,23 +160,7 @@ def getUserStatsPerComp(compName, uid):
         right outer join Parts p on s.pid = p.pid
         join Questions q on p.qid = q.qid 
         join Competitions c on q.cid = c.cid 
-        where s.uid = {uid} and c.name = '{compName}';
-    """
-    cur.execute(query)
-
-    return cur.fetchall()
-
-# Get only the number of stars and points for a user.
-# Returns extremely simple info
-def getBasicUserStatsPerComp(compName, uid):
-
-    # A right outer join returns all the results from the parts table, even if there is no solves
-    # Best to look up examples :D 
-    # Use this information to deduce whether a user has solved a part or not
-    query = f"""
-        select u.username, u.github, s.numStars, s.score from Stats s
-        right outer join Users u
-        where s.uid = {uid} and c.name = '{compName}';
+        where i.uid = {uid} and c.name = {compName};
     """
     cur.execute(query)
 
@@ -217,12 +189,22 @@ def getAllCompetitions():
 def updateUsername(username, uid):
     query = f"""
         update Users
-        set username = '{username}'
+        set username = {username}
         where uid = {uid};
     """
     cur.execute(query)
     conn.commit()
-    '''
-    cursor.close()
-    conn.close()
-    '''
+
+# DO NOT EVER EXECUTE THIS FUNCTION BRUH
+def dropDatabase():
+    query = f"""
+        SELECT 'DROP TABLE IF EXISTS "' || tablename || '" CASCADE;' 
+        from
+        pg_tables WHERE schemaname = 'advent';
+    """
+    cur.execute(query)
+    conn.commit()
+
+def clear_database():
+    conn = get_connection()
+    cursor = conn.cursor()

@@ -83,6 +83,23 @@ def set_name():
     except:
         raise AuthError("Invalid token")
 
+"""
+@user.route("/user/reset_email/request", methods=["POST"])
+def reset_email_request():
+    data = request.get_json()
+    '''
+    {
+        token: token (in cookies)
+        email: string
+    }
+    '''
+    try:
+        verify_jwt_in_request()
+    except:
+        raise AuthError("Invalid token")
+=======
+>>>>>>> main
+
 
 
 # @user.route("/reset_email/request", methods=["POST"])
@@ -135,4 +152,4 @@ def set_name():
 # def reset_password_request():
 #     json = request.get_json()
 #     return jsonify({})
-
+"""

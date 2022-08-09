@@ -326,9 +326,45 @@ def addReplica(compName, questionName, dayNum, partDescription, username, email,
     cur.execute(query)
     conn.commit()
 
+# Check if they've solved
+def checkSolve(compName, dayNum, partNum, uid):
+    query = f""" 
+        select * from Solves s 
+        join Parts p on p.pid = s.pid
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
+        where c.name = '{compName}' and s.uid = {uid} and p.partNum = {partNum} and q.dayNum = {dayNum};
+    """
+    cur.execute(query)
+
+    return (len(cur.fetchall()) == 1)
+
+# Create a solve.
+# This requires you to know the part id, solve time and number of points
+def createSolve(uid, pid, solveTime, points):
+    query = f""" 
+        insert into Solves s 
+        values ({uid}, {pid}, {solveTime}, {points});
+    """
+    cur.execute(query)
+    conn.commit()
+
+# Gets the pid given compName, dayNum, partNum
+def findPid(compName, dayNum, partNum):
+    query = f""" 
+        select p.pid from Parts p
+        join Questions q on p.qid = q.qid
+        join Competitions c on q.cid = c.cid
+        where c.name = '{compName}' and p.partNum = {partNum} and q.dayNum = {dayNum};
+    """
+    cur.execute(query)
+
+    return cur.fetchall()
+
+# Get number of people who have already solved
 def getNumSolved(compName, dayNum, partNum, uid):
-    query = f"""
-        select count(*) from Solves s
+    query = f""" 
+        select count(*) from Solves s 
         join Parts p on p.pid = s.pid
         join Questions q on p.qid = q.qid
         join Competitions c on q.cid = c.cid

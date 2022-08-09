@@ -8,8 +8,8 @@ from models.user import User
 def db_add_competition(name):
     return add_competition(name)
 
-def db_add_question(name, dayNum, numParts):
-    return add_question(name, dayNum, numParts)
+def db_add_question(cid, name, dayNum, numParts):
+    return add_question(cid, name, dayNum, numParts)
 
 def db_add_part(qid, partNum):
     add_part(qid, partNum)

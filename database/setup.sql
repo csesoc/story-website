@@ -39,7 +39,7 @@ DROP TABLE IF EXISTS Parts;
 CREATE TABLE Parts (
     pid          SERIAL PRIMARY KEY,
     qid          SERIAL REFERENCES Questions(qid),
-    description  TEXT NOT NULL,
+    description  TEXT,
     partNum      INTEGER NOT NULL,
     numSolved    INTEGER NOT NULL DEFAULT 0,
     bestTime     TIME

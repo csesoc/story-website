@@ -30,9 +30,9 @@ def test_stats(client):
     assert register_response.status_code == 200
 
     # Check inbox
-    mailbox = poplib.POP3("pop.googlemail.com", 1100)
-    mailbox.user("pearlercomp2022@gmail.com")
-    mailbox.pass_("appleler")
+    mailbox = poplib.POP3("pop3.mailtrap.io", 1100)
+    mailbox.user(os.environ["MAILTRAP_USERNAME"])
+    mailbox.pass_(os.environ["MAILTRAP_PASSWORD"])
 
     # Check the contents of the email, and harvest the token from there
     raw_email = b"\n".join(mailbox.retr(1)[1])

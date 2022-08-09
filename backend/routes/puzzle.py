@@ -2,7 +2,7 @@ from xml.sax.handler import all_properties
 from common.exceptions import RequestError, AuthError
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
-from puzzles.calendar.calendar import calendar
+from puzzles.calendar import calendar
 
 puzzle = Blueprint("puzzle", __name__)
 

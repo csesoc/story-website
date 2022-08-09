@@ -18,7 +18,7 @@ def register_incorrect(id):
     if times is None:
         times = 0
 
-    cache.set(f"attempts_{id}", times + 1)
+    cache.set(f"attempts_{id}", int(times) + 1)
 
 def incorrect_attempts(id):
     attempts = cache.get(f"attempts_{id}")
@@ -45,3 +45,6 @@ def block(id, time):
 def is_blocked(id):
     token = cache.get(f"block_{id}")
     return token is not None
+
+def clear_redis():
+    cache.flushdb()

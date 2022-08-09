@@ -48,7 +48,7 @@ def fetch_id(email: str):
             db.putconn(conn)
             return None
 
-        id = cursor.fetchone()[0]
+        id = result[0]
 
     db.putconn(conn)
     return id

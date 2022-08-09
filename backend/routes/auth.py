@@ -5,7 +5,7 @@ from flask_jwt_extended import create_access_token, set_access_cookies, unset_jw
 
 from common.exceptions import AuthError
 from common.plugins import mail
-from common.redis import is_blocked, register_incorrect
+from common.redis import block, calculate_time, incorrect_attempts, is_blocked, register_incorrect
 from database.user import fetch_id
 from models.user import User
 
@@ -14,7 +14,6 @@ from models.user import User
 auth = Blueprint("auth", __name__)
 
 # Routes (fairly temporary here)
-# TODO: add invalid login attempt protection
 
 @auth.route("/login", methods=["POST"])
 def login():
@@ -29,6 +28,13 @@ def login():
         user = User.login(json["email"], json["password"])
     except Exception as e:
         register_incorrect(id)
+
+        attempts = incorrect_attempts(id)
+
+        if attempts >= 3:
+            block_time = calculate_time(attempts)
+            block(id, block_time)
+
         raise e
 
     token = create_access_token(identity=user)

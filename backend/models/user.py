@@ -102,12 +102,12 @@ class User:
         result = fetch_user(normalised)
 
         try:
-            id, email, username, stars, score, hashed = result
+            id, email, github_username, username, hashed = result
             hasher.verify(hashed, password)
         except (TypeError, VerificationError) as e:
             raise AuthError(description="Invalid email or password") from e
 
-        return User(id, email, username, hashed, stars, score)
+        return User(id, email, username, hashed, github_username)
 
     @staticmethod
     def get(id):

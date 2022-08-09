@@ -7,8 +7,6 @@ host = os.environ["POSTGRES_HOST"]
 port = os.environ["POSTGRES_PORT"]
 database = os.environ["POSTGRES_DB"]
 
-TABLES = ["Users", "Questions", "Competitions", "Inputs", "Solves"]
-
 db = ThreadedConnectionPool(
     1, 20,
     user=user,
@@ -22,8 +20,10 @@ def clear_database():
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        for table in TABLES:
-            cursor.execute(f"TRUNCATE TABLE {table} CASCADE")
+        cursor.execute("""SELECT table_name FROM information_schema WHERE table_schema = 'public'""")
+
+        for table in cursor.fetchall():
+            cursor.execute(f"TRUNCATE TABLE {table[0]} CASCADE")
 
         conn.commit()
     

@@ -1,5 +1,22 @@
 from database.database import db
 
+# Get all the information about a user given their uid
+# Returns all information in the form of a dictionary
+def get_user_info(uid):
+    conn = db.getconn()
+
+    with conn.cursor() as cursor:
+        query = f"""
+            select * from Users where uid = {uid};
+        """
+        cursor.execute(query)
+
+        # only one entry should be returned since day number is unique
+        t = cursor.fetchone()
+
+    db.putconn(conn)
+    return t
+
 
 def add_user(email, username, password, stars, score) -> int:
     """Adds a user to the database, returning their ID."""

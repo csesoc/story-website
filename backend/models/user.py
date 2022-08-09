@@ -20,13 +20,11 @@ hasher = PasswordHasher(
 verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
 class User:
-    def __init__(self, id, email, username, password, stars=0, score=0):
+    def __init__(self, id, email, username, password):
         self.id = id
         self.email = email
         self.username = username
         self.password = password
-        self.stars = stars
-        self.score = score
 
     # Helper methods
 
@@ -88,7 +86,7 @@ class User:
         for key, value in result.items():
             stringified[key.decode()] = value.decode()
 
-        id = add_user(stringified["email"], stringified["username"], stringified["password"], 0, 0)
+        id = add_user(stringified["email"], stringified["username"], stringified["password"])
         return User(id, stringified["email"], stringified["username"], stringified["password"])
 
     @staticmethod
@@ -102,12 +100,12 @@ class User:
         result = fetch_user(normalised)
 
         try:
-            id, email, username, stars, score, hashed = result
+            id, email, username, github, hashed = result
             hasher.verify(hashed, password)
         except (TypeError, VerificationError) as e:
             raise AuthError(description="Invalid email or password") from e
 
-        return User(id, email, username, hashed, stars, score)
+        return User(id, email, username, hashed)
 
     @staticmethod
     def get(id):
@@ -121,8 +119,8 @@ class User:
             if fetched == []:
                 raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-            id, email, username, stars, score, password = fetched[0]
+            id, email, github, username, password = fetched[0]
 
         db.putconn(conn)
 
-        return User(id, email, username, password, stars, score)
+        return User(id, email, username, password)

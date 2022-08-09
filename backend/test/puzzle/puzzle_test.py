@@ -17,7 +17,7 @@ def test_no_competition(client):
 
     assert response.status_code == 200
 
-    response = client.post("/puzzle/all", params={
+    response = client.get("/puzzle/all", json={
         "competition": "Birds can't fly"
     })
 
@@ -25,6 +25,7 @@ def test_no_competition(client):
 
 
 def test_puzzle_all(client):
+
     clear_all()
 
     db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
@@ -36,13 +37,14 @@ def test_puzzle_all(client):
 
     assert response.status_code == 200
 
-    response = client.post("/puzzle/all", params={
+    response = client.get("/puzzle/all", json={
         "competition": "2022 Advent of Code"
     })
 
     assert response.status_code == 200
-    assert response.json()["puzzles"][0]["dayNum"] == 1
-    assert response.json()["puzzles"][0]["part"]["partNum"] == 1
+    print(response.get_json())
+    assert response.get_json()["puzzles"][0]["dayNum"] == 1
+    assert response.get_json()["puzzles"][0]["parts"][0]["partNum"] == 1
 
 def test_puzzle_no_day(client):
     clear_all()
@@ -56,9 +58,9 @@ def test_puzzle_no_day(client):
 
     assert response.status_code == 200
 
-    response = client.post("/puzzle/details", params={
+    response = client.get("/puzzle/details", json={
         "competition": "2022 Advent of Code",
-        "day": 10000
+        "dayNum": 10000
     })
 
     assert response.status_code == RequestError.code
@@ -75,9 +77,9 @@ def test_puzzle_details(client):
 
     assert response.status_code == 200
 
-    response = client.post("/puzzle/all", params={
+    response = client.get("/puzzle/details", json={
         "competition": "2022 Advent of Code",
-        "day": 1
+        "dayNum": 1
     })
 
     assert response.status_code == 200

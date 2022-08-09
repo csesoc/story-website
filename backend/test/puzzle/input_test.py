@@ -17,9 +17,9 @@ def test_no_part(client):
 
     assert response.status_code == 200
 
-    response = client.post("/puzzle/input", params={
+    response = client.get("/puzzle/input", json={
         "competition": "2022 Advent of Code",
-        "day": 1,
+        "dayNum": 1,
         "part": 10000
     })
 
@@ -35,23 +35,23 @@ def test_unique_input(client):
         "password": "foobar"
     })
 
-    response1 = client.post("/puzzle/input", params={
+    response1 = client.get("/puzzle/input", json={
         "competition": "2022 Advent of Code",
-        "day": 1,
+        "dayNum": 1,
         "part": 1
     })
 
-    db_add_user("user2@gmail.com", "asdf", "foobar")
+    db_add_user("user2@gmail.com", "yay", "passss")
 
     response = client.post("/auth/login", json={
         "email": "user2@gmail.com",
-        "password": "foobar"
+        "password": "passss"
     })
 
-    response2 = client.post("/puzzle/input", params={
+    response2 = client.get("/puzzle/input", json={
         "competition": "2022 Advent of Code",
-        "day": 1,
+        "dayNum": 1,
         "part": 1
     })
 
-    assert response1.json()["input"] != response2.json()["input"]
+    assert response1.get_json()["input"] != response2.get_json()["input"]

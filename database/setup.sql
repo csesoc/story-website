@@ -27,7 +27,7 @@ DROP TABLE IF EXISTS Questions;
 CREATE TABLE Questions (
     qid          SERIAL PRIMARY KEY,
     cid          SERIAL REFERENCES Competitions(cid),
-    numParts     INTEGER NOT NULL DEFAULT 2,
+    numParts     INTEGER NOT NULL DEFAULT 0,
     name         TEXT NOT NULL,
     pixelArtLine TEXT NOT NULL,
     dayNum       INTEGER UNIQUE NOT NULL
@@ -74,6 +74,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+-- TODO: Fix triggers! -----------------------------------------------------------------------------------------------------------------------
+
 -- Creates a trigger to update stats whenever solves is updated
 CREATE OR REPLACE FUNCTION update_stats() RETURNS trigger AS $$
 BEGIN
@@ -88,3 +91,45 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER update_stats
 AFTER INSERT ON Solves
 for each ROW EXECUTE PROCEDURE update_stats();
+
+-- Creates a trigger to update numQuestions whenever a question is added
+CREATE OR REPLACE FUNCTION update_comp_questions() RETURNS trigger AS $$
+BEGIN
+    update  Competitions
+    set     numQuestions = numQuestions + 1
+    where   Competitions.cid = new.cid
+    return  new;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER update_comp_questions
+AFTER INSERT ON Questions
+for each ROW EXECUTE PROCEDURE update_comp_questions();
+
+-- Creates a trigger to update numParts whenever a part is added
+CREATE OR REPLACE FUNCTION update_question_parts() RETURNS trigger AS $$
+BEGIN
+    update  Questions
+    set     numParts = numParts + 1
+    where   Questions.qid = new.qid
+    return  new;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER update_question_parts
+AFTER INSERT ON Parts
+for each ROW EXECUTE PROCEDURE update_question_parts();
+
+-- Creates a trigger to update numSolved whenever a part is added
+CREATE OR REPLACE FUNCTION update_parts_solved() RETURNS trigger AS $$
+BEGIN
+    update  Parts
+    set     numSolved = numSolved + 1
+    where   Parts.pid = new.pid
+    return  new;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER update_parts_solved
+AFTER INSERT ON Solves
+for each ROW EXECUTE PROCEDURE update_parts_solved();

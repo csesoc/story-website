@@ -73,3 +73,18 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Creates a trigger to update stats whenever solves is updated
+CREATE OR REPLACE FUNCTION update_stats() RETURNS trigger AS $$
+BEGIN
+    update  Stats 
+    set     score = score + new.points, numStars = numStars + 1
+    where   Stats.uid = new.uid and Stats.cid = 
+        (select c.cid from Competitions c join Questions q on q.cid = c.cid join Parts p on p.qid = q.qid where p.pid = new.pid);
+    return  new;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER update_stats
+AFTER INSERT ON Solves
+for each ROW EXECUTE PROCEDURE update_stats();

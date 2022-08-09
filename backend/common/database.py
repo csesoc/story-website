@@ -7,7 +7,7 @@ host = os.environ["POSTGRES_HOST"]
 port = os.environ["POSTGRES_PORT"]
 database = os.environ["POSTGRES_DB"]
 
-TABLES = ["Users", "Questions", "Competitions", "Inputs", "Solves"]
+# TABLES = ["Users", "Questions", "Competitions", "Inputs", "Solves"]
 
 def get_connection():
     conn = psycopg2.connect(

@@ -1,10 +1,13 @@
 from common.redis import clear_redis
 from database.database import clear_database
 from database.user import add_user
-from database.puzzle import add_part, add_question
+from database.puzzle import add_part, add_question, add_competition
 from models.user import User
 
-# def db_add_comp(compName, )
+
+def db_add_competition(name):
+    return add_competition(name)
+
 def db_add_question(name, dayNum, numParts):
     return add_question(name, dayNum, numParts)
 

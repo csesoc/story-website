@@ -2,7 +2,7 @@ from common.exceptions import RequestError
 import pytest
 
 # Import for pytest
-from test.helpers import clear_all, db_add_user, db_add_part, db_add_question
+from test.helpers import clear_all, db_add_user, db_add_part, db_add_question, db_add_competition
 from test.fixtures import app, client
 
 def test_no_competition(client):
@@ -15,7 +15,8 @@ def test_no_competition(client):
         "password": "foobar"
     })
 
-    qid = db_add_question("day 1", 1, 1)
+    cid = db_add_competition("2022 Advent of Code")
+    qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
     response = client.get("/puzzle/all", json={
@@ -36,7 +37,8 @@ def test_puzzle_all(client):
         "password": "foobar"
     })
 
-    qid = db_add_question("day 1", 1, 1)
+    cid = db_add_competition("2022 Advent of Code")
+    qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
     response = client.get("/puzzle/all", json={
@@ -58,7 +60,8 @@ def test_puzzle_no_day(client):
         "password": "foobar"
     })
 
-    qid = db_add_question("day 1", 1, 1)
+    cid = db_add_competition("2022 Advent of Code")
+    qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
     response = client.get("/puzzle/details", json={
@@ -78,7 +81,8 @@ def test_puzzle_details(client):
         "password": "foobar"
     })
 
-    qid = db_add_question("day 1", 1, 1)
+    cid = db_add_competition("2022 Advent of Code")
+    qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
     response = client.get("/puzzle/details", json={

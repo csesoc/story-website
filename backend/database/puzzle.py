@@ -1,11 +1,25 @@
 from database.database import db
 
-def add_question(name, dayNum, numParts):
+def add_competition(name):
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        cursor.execute("INSERT INTO Questions (name, dayNum, numParts) VALUES (%s, %s, %s)",
-                       (name, dayNum, numParts))
+        cursor.execute("INSERT INTO Competitions (name) VALUES (%s)",
+                       (name))
+        conn.commit()
+
+        cursor.execute("SELECT cid FROM Competitions WHERE name = %s", (name,))
+        cid = cursor.fetchone()[0]
+    db.putconn(conn)
+
+    return cid
+
+def add_question(cid, name, dayNum, numParts):
+    conn = db.getconn()
+
+    with conn.cursor() as cursor:
+        cursor.execute("INSERT INTO Questions (cid, name, dayNum, numParts) VALUES (%s, %s, %s, %s)",
+                       (cid, name, dayNum, numParts))
         conn.commit()
 
         cursor.execute("SELECT qid FROM Questions WHERE name = %s", (name,))

@@ -2,7 +2,7 @@ import pytest
 from common.exceptions import RequestError
 
 # Import for pytest
-from test.helpers import clear_all, db_add_user, db_add_question, db_add_part
+from test.helpers import clear_all, db_add_user, db_add_question, db_add_part, db_add_competition
 from test.fixtures import app, client
 
 def test_no_part(client):
@@ -15,7 +15,8 @@ def test_no_part(client):
         "password": "foobar"
     })
 
-    qid = db_add_question("day 1", 1, 1)
+    cid = db_add_competition("2022 Advent of Code")
+    qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
     response = client.get("/puzzle/input", json={
@@ -49,7 +50,8 @@ def test_unique_input(client):
         "password": "passss"
     })
 
-    qid = db_add_question("day 1", 1, 1)
+    cid = db_add_competition("2022 Advent of Code")
+    qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
     response2 = client.get("/puzzle/input", json={

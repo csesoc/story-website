@@ -79,13 +79,11 @@ class User:
 
         if not cache.exists(cache_key):
             raise AuthError("Token expired or does not correspond to registering user")
-
         result = cache.hgetall(cache_key)
         stringified = {}
         
         for key, value in result.items():
             stringified[key.decode()] = value.decode()
-
         id = add_user(stringified["email"], stringified["username"], stringified["password"])
         return User(id, stringified["email"], stringified["username"], stringified["password"])
 

@@ -226,3 +226,16 @@ def updateUsername(username, uid):
     cursor.close()
     conn.close()
     '''
+
+def updateEmail(email, uid):
+    query = f"""
+        update Users
+        set email = '{email}'
+        where uid = {uid};
+    """
+    cur.execute(query)
+    conn.commit()
+    '''
+    cursor.close()
+    conn.close()
+    '''

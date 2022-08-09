@@ -1,15 +1,23 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request, get_jwt_identity
-
+from flask_mail import Message
+from email_validator import validate_email, EmailNotValidError
 import re
+import os
 
+from datetime import timedelta
 from common.exceptions import AuthError, RequestError
-from common.database import getCompetitionQuestions, getUserStatsPerComp, updateUsername
+from common.database import getCompetitionQuestions, getUserStatsPerComp, updateUsername, updateEmail
 from database.user import username_exists
 from models.user import User
+from itsdangerous import URLSafeTimedSerializer
+from common.redis import cache
+from common.plugins import mail
 
 user = Blueprint("user", __name__)
+verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
+@jwt_required()
 @user.route("/profile", methods=["GET"])
 def get_profile():
     try:
@@ -26,7 +34,7 @@ def get_profile():
         raise AuthError("Invalid Token")
 
 
-
+@jwt_required()
 @user.route("/stats", methods=['GET'])
 def get_stats():
 
@@ -34,24 +42,20 @@ def get_stats():
 
     try:
         verify_jwt_in_request()
-        id = get_jwt_identity()
-        competition = request.args.get('competition')
-
-        if getCompetitionQuestions(competition) == {}:
-            raise RequestError("The competition doesn't exist")
-
-        # TODO: fix this function.
-
-        stats = getUserStatsPerComp(competition, id)
-        
-        ## find a way to get the stat infos, they are spread across multiple tables.
-
-        return jsonify({
-            "stats": stats
-        })
     except:
         raise AuthError("Invalid token")
 
+    id = get_jwt_identity()
+    competition = request.args.get('competition')
+
+    if getCompetitionQuestions(competition) == {}:
+        raise RequestError("The competition doesn't exist")
+    stats = getUserStatsPerComp(competition, id)
+    return jsonify({
+        "stats": stats
+    })
+
+@jwt_required()
 @user.route("/set_name", methods=['POST'])
 def set_name():
     # {
@@ -60,69 +64,106 @@ def set_name():
     # }
     
     try:
-        print('hello')
-        print('hello0')
-        verify_jwt_in_request()
-        print('hello1')
+        verify_jwt_in_request() # Something is going very wrong with the token and I have no idea what's happening
         id = get_jwt_identity()
-        print('hello2')
-        user_data = User.get(id)
-        print('hello3')
-        json = request.get_json()
-        print('hello4')
-        username = json["username"]
-        print('hello5')
+    except Exception as e:
+        print(e)
+        raise AuthError("Invalid token")
+    user_data = User.get(id)
+    json = request.get_json()
+    username = json["username"]
 
-        # if username already in database, raise RequestError.
-        if username_exists(username):
-            raise RequestError(description="Username already used")
-        else:
-            updateUsername(username, id)
+    # if username already in database, raise RequestError.
+    if username_exists(username):
+        raise RequestError(description="Username already used")
+    else:
+        updateUsername(username, id)
 
-        return jsonify({})
+    return jsonify({})
+
+@jwt_required()
+@user.route("/reset_email/request", methods=["POST"])
+def reset_email_request():
+    json = request.get_json()
+    '''
+    {
+        token: token (in cookies)
+        email: string
+    }
+    '''
+    try:
+        verify_jwt_in_request()
     except:
         raise AuthError("Invalid token")
+    try:
+        normalised = validate_email(json['email']).email
+    except EmailNotValidError as e:
+        raise RequestError(description="Invalid email") from e
 
+    id = get_jwt_identity()
+    # user_data = User.get(id)
 
+    code = verify_serialiser.dumps(json["email"])
+    data = {
+        "email": normalised,
+    }
 
-# @user.route("/reset_email/request", methods=["POST"])
-# def reset_email_request():
-#     data = request.get_json()
-#     '''
-#     {
-#         token: token (in cookies)
-#         email: string
-#     }
-#     '''
-#     try:
-#         verify_jwt_in_request()
-#     except:
-#         raise AuthError("Invalid token")
+    # We use a pipeline here to ensure these instructions are atomic
+    pipeline = cache.pipeline()
+    pipeline.hset(f"email_reset_code:{code}", mapping=data)
+    pipeline.expire(f"email_reset_code:{code}", timedelta(hours=1))
+    pipeline.execute()
 
+    url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
 
-#     # Check if email refers to an actual email.
-#     if not re.match('^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$', data['email']):
-#         raise RequestError("email not valid")
-#     return {}
+    html = render_template("activate.html", reset_code=url)
+
+    # Send it over to email
+    message = Message(
+        "Email Request for Week in Wonderland",
+        sender="weekinwonderland@csesoc.org.au",
+        recipients=[json["email"]],
+        html=html
+    )
+
+    mail.send(message)
+
+    response = jsonify({})
+
+    return response, 200
+
 
 
 
     
-# @user.route("/reset_email/reset", methods=['POST'])
-# def reset_email():
-#     json = request.get_json()
-#     '''
-#     {
-#     token: token (in cookie)
-#     reset_code: string
-#     }
-#     '''
-#     try:
-#         verify_jwt_in_request()
-#     except:
-#         raise AuthError("Invalid token")
+@user.route("/reset_email/reset", methods=['POST'])
+def reset_email():
+    json = request.get_json()
+    try:
+        verify_jwt_in_request()
+        id = get_jwt_identity()
+    except:
+        raise AuthError("Invalid token")
 
-#     '''
+    cache_key = f"email_reset_code:{json['reset_code']}"
+    if not cache.exists(cache_key):
+        raise AuthError("Reset code expired or does not correspond to registering user")
+    result = cache.hgetall(cache_key)
+    stringified = {}
+    
+    for key, value in result.items():
+        stringified[key.decode()] = value.decode()
+    updateEmail(stringified["email"], id)
+    response = jsonify({})
+    return response, 200
+
+    '''
+    {
+    token: token (in cookie)
+    reset_code: string
+    }
+    '''
+    '''
 #     if (json['reset_code'] not match the code in database for user):
 #         raise AuthError("The reset code is wrong.")
 #     else:

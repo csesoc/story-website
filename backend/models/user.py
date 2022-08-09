@@ -8,7 +8,6 @@ from itsdangerous import URLSafeTimedSerializer
 
 from common.exceptions import AuthError, InvalidError, RequestError
 from common.redis import cache
-from database.database import db
 from database.user import add_user, email_exists, fetch_user, get_user_info, username_exists
 
 hasher = PasswordHasher(

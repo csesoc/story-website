@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request, get_jwt_identity
 
+# what does this do? ask Hanyuan
 from puzzles.calendar.calendar import calendar
 
 import re
@@ -10,29 +11,19 @@ from common.database import getCompetitionQuestions, getUserStatsPerComp, update
 from database.user import username_exists
 from models.user import User
 
-puzzle = Blueprint("puzzle", __name__)
+leaderboard = Blueprint("leaderboard", __name__)
 
-# @puzzle.route("/description", methods=["GET"])
-# def description():
-#     year = int(request.args.get("year"))
-#     day = int(request.args.get("day"))
-#     task = calendar[year][day](0)
-
-#     return jsonify({
-#         "description": task.description()
-#     })
-
-@puzzle.route("/all", methods=['GET'])
-def get_all_puzzles():
+@leaderboard.route("/entries", methods=['GET'])
+def get_leaderboard_twenty():
 
     # {
-    # token: token (in cookies),
-    # competition: string,
-    # day: integer
+    #   token: token (in cookies),
+    #   competition: string,
+    #   search: string
     # }
 
     # {
-    # puzzles : puzzle[]
+    #   leaderboard: score[]
     # }
 
     try:
@@ -42,65 +33,17 @@ def get_all_puzzles():
     except:
         raise AuthError("Invalid token")
 
-@puzzle.route("/details", methods=['GET'])
-def get_puzzle_details():
+@leaderboard.route("/position", methods=['GET'])
+def get_leaderboard_position():
 
     # {
-    # token: token (in cookies),
-    # competition: string,
-    # day: integer
+    #   token: token (in cookies),
+    #   competition: string
     # }
 
     # {
-    # n_parts: integer,
-    # name: string,
-    # dayNum: integer,
-    # parts: part[]
+    # position: integer
     # }
-
-    try:
-        verify_jwt_in_request()
-        id = get_jwt_identity()
-        pass
-    except:
-        raise AuthError("Invalid token")
-
-@puzzle.route("/all", methods=['GET'])
-def get_puzzle_input():
-
-    # {
-    # token: token (in cookies),
-    # competition: string,
-    # day: integer
-    # }
-
-    # {
-    #   input: string
-    # }
-
-    try:
-        verify_jwt_in_request()
-        id = get_jwt_identity()
-        pass
-    except:
-        raise AuthError("Invalid token")
-
-@puzzle.route("/all", methods=['POST'])
-def solve_puzzle():
-
-    # {
-    # token: token (in cookies),
-    # competition: string,
-    # day: integer,
-    # part: integer,
-    # solution: string
-    # }
-
-    # {
-    # correct: boolean,
-    # reason: string
-    # }
-
 
     try:
         verify_jwt_in_request()

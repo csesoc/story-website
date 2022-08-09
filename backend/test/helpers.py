@@ -5,7 +5,7 @@ from models.user import User
 
 
 def db_add_user(email, username, password):
-    add_user(email, username, User.hash_password(password), 0, 0)
+    add_user(email, username, User.hash_password(password))
 
 def clear_all():
     # Clear Redis

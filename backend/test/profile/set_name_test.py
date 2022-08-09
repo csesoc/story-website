@@ -61,6 +61,7 @@ def test_set_name(client):
         "token": token,
         "username": "nunu"
     })
+
     assert change.status_code == 200
 
     profile = client.get("/user/profile")
@@ -77,7 +78,7 @@ def test_set_name_repeated(client):
     reused_username = "foo"
 
     # Register the user in the database directly
-    db_add_user("asdfghjkl@gmail.com", reused_username, "bar")
+    db_add_user("a@gmail.com", reused_username, "bar")
 
     register_response = client.post("/auth/register", json={
         "email": "asdfghjkl@gmail.com",

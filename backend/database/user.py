@@ -1,17 +1,16 @@
 from database.database import db
 
 
-def add_user(email, username, password, stars, score) -> int:
+def add_user(email, username, password) -> int:
     """Adds a user to the database, returning their ID."""
 
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        cursor.execute("INSERT INTO Users (email, username, password, numStars, score) VALUES (%s, %s, %s, %s, %s)",
-                       (email, username, password, stars, score))
+        cursor.execute(f"INSERT INTO Users (email, username, password) VALUES ('{email}', '{username}', '{password}')")
         conn.commit()
 
-        cursor.execute("SELECT uid FROM Users WHERE email = %s", (email,))
+        cursor.execute(f"SELECT uid FROM Users WHERE email = '{email}'")
         id = cursor.fetchone()[0]
 
     db.putconn(conn)
@@ -24,7 +23,7 @@ def fetch_user(email: str):
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM Users WHERE email = %s", (email,))
+        cursor.execute(f"SELECT * FROM Users WHERE email = '{email}'")
         result = cursor.fetchone()
 
     db.putconn(conn)
@@ -37,7 +36,7 @@ def email_exists(email: str) -> bool:
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM Users WHERE email = %s", (email,))
+        cursor.execute(f"SELECT * FROM Users WHERE email = '{email}'")
         results = cursor.fetchall()
 
     db.putconn(conn)
@@ -50,7 +49,7 @@ def username_exists(username: str) -> bool:
     conn = db.getconn()
 
     with conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM Users WHERE username = %s", (username,))
+        cursor.execute(f"SELECT * FROM Users WHERE username = '{username}'")
         results = cursor.fetchall()
 
     db.putconn(conn)

@@ -213,7 +213,7 @@ def getAllCompetitions():
     return cur.fetchall()
 
 # Pre conditions assume we have already checked that noone has that username
-# No idea whether this works lol never done something like this before
+# TODO: No idea whether this works lol never done something like this before
 def updateUsername(username, uid):
     query = f"""
         update Users
@@ -222,7 +222,29 @@ def updateUsername(username, uid):
     """
     cur.execute(query)
     conn.commit()
-    '''
-    cursor.close()
-    conn.close()
-    '''
+
+# Finds top N of a leaderboard, where N is a positive integer
+# Assumes comp name is legit
+def getNLeaderboard(compName, n):
+    query = f""" 
+        select top {n} * from Stats s
+        join Competitions c on s.cid = c.cid
+        where c.name = '{compName}'
+        order by s.score DESC;
+    """
+    cur.execute(query)
+    conn.commit()
+
+# Finds top N of a leaderboard of all users who begin with prefix
+# Assumes comp name is legit
+# TODO: left outer join may not work! Needs to be tested on people with no puzzle input.
+def searchLeaderboard(compName, prefix, n):
+    query = f""" 
+        select top {n} * from Users u
+        left outer join Stats s on s.uid = u.uid
+        join Competitions c on s.cid = c.cid
+        where c.name = '{compName}' and (u.username like '{prefix}%' or u.github like '{prefix}%')
+        order by s.score DESC;
+    """
+    cur.execute(query)
+    conn.commit()

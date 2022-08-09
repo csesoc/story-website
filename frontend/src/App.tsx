@@ -10,6 +10,7 @@ import About from './pages/About';
 import Leaderboard from './pages/Leaderboard';
 import Calendar from './pages/Calendar';
 import Stats from './pages/Stats';
+import Problem from './pages/Problem';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -26,6 +27,7 @@ const App: React.FC<{}> = () => {
         <Route path="/2022/calendar" element={<Calendar />} />
         <Route path="/2022/leaderboard" element={<Leaderboard />} />
         <Route path="/2022/stats" element={<Stats />} />
+        <Route path="/2022/problem/:id" element={<Problem />} />
       </Routes>
       <Footer />
     </Router>

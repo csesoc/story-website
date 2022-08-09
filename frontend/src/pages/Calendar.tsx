@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Button, Container } from "react-bootstrap";
+import { Button, Container, OverlayTrigger, Popover } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 import styles from "../App.module.css";
 
 import PuzzleBox from "../components/PuzzleBox";
+import calendarImgMono from "./img/calendarImageMono.png";
+import calendarImgColoured from "./img/calendarImageColoured.png";
+import starMono from "./img/starMono.png";
+import starColoured from "./img/starColoured.png";
 
 import { BACKEND_URI } from "src/config";
 
@@ -22,6 +26,13 @@ export interface part {
   answer: string
 }
 
+interface buttonPos {
+  left: number,
+  top: number,
+  radius: number,
+  tooltip: "top" | "bottom" | "left" | "right"
+}
+
 // puzzle: {
 //   n_parts: integer,
 //   name: string,
@@ -30,6 +41,9 @@ export interface part {
 // }
 
 const Calendar: React.FC<{}> = () => {
+
+  let nav = useNavigate();
+
   const defaultProblems : puzzle[] = [
     {
       name: 'Manav is a very cool ice cube',
@@ -56,8 +70,12 @@ const Calendar: React.FC<{}> = () => {
       partsInfo : [],
     }
   ];
+
+  const defaultStatus : number[] = [0, 1, 2];
+
   const [times, setTimes] = useState(0);
   const [showPuzzles, setShowPuzzles] = useState(defaultProblems);
+  const [puzzleStatus, setPuzzleStatus] = useState(defaultStatus);
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -98,15 +116,74 @@ const Calendar: React.FC<{}> = () => {
     
   }, []);
 
+  const imageAspect = 16/9;
+  const buttons : buttonPos[] = [
+    {
+      left: 10,
+      top: 10,
+      radius: 10,
+      tooltip: "bottom"
+    },
+    {
+      left: 30,
+      top: 20,
+      radius: 20,
+      tooltip: "right"
+    },
+    { left: 50,
+      top: 60,
+      radius: 15,
+      tooltip: "top"
+    }
+  ];
+
   return (
     <>
-      <div className={styles.quizRightPanel}>
-        {showPuzzles.map((puzzle, i) =>
-        <div key={'puzzle_' + i} className={styles.puzzleBox}>
-          <h2>{'Question ' + (i + 1)}</h2>
-          <PuzzleBox name={puzzle.name} dayNum={puzzle.dayNum} pixelArtLine={puzzle.pixelArtLine} partsInfo={puzzle.partsInfo}/>
-          <br />
-        </div>)}
+      <div className={styles.calendarPage}>
+        <div className={styles.calendarLeft}>
+          <span>Competition description placeholder</span>
+        </div>
+        <div className={styles.calendarRight}>
+          <div className={styles.calendarImgContainer}>
+            <img className={styles.calendarImgBack} src={calendarImgMono}/>
+            {buttons.map((pos : buttonPos, id : number) => <OverlayTrigger
+                placement = {pos.tooltip}
+                overlay = {
+                  <Popover className={styles.calendarPopover}>
+                    <Popover.Header>Day {id + 1}</Popover.Header>
+                    <Popover.Body className={styles.calendarPopoverBody}>
+                      <img className={styles.calendarStar} src={(puzzleStatus[id] > 0) ? starColoured : starMono}/>
+                      <img className={styles.calendarStar} src={(puzzleStatus[id] > 1) ? starColoured : starMono}/>
+                    </Popover.Body>
+                  </Popover>
+                }
+              >
+              <div 
+                className={styles.calendarButton} 
+                style={{
+                  left: pos.left + '%', 
+                  top: pos.top + '%',
+                  width: pos.radius + '%',
+                  /* I'm setting everything to be relative to the width of the image because
+                  responsiveness, but since the aspect ratio of the image is 16:9, we have this weird hack.
+                  */
+                height: (pos.radius * imageAspect) + '%',
+                backgroundImage: "url(" + calendarImgColoured + ")",
+                /* More weird stuff: we need to somehow set the background image of this button
+                to be negatively offset so that it lines up perfectly with the monochrome
+                background. I don't know how this works but it does, so I don't ask too many questions.
+                */
+                backgroundPosition: (pos.left / (100 - pos.radius) * 100) + "% " + (pos.top / (100 -pos.radius * imageAspect) * 100) + "%",
+                backgroundSize: (100 / (pos.radius) * 100) + "%"
+              }} 
+              onClick={() => {
+                nav("/2022/problem/" + (id + 1));
+              }}
+              />
+            </OverlayTrigger>)}
+          </div>
+          <span>Time until next puzzle:</span>
+        </div>
       </div>
     </>
   )

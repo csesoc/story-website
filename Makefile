@@ -40,3 +40,6 @@ restart:
 
 test-backend:
 	docker-compose exec backend pytest .
+
+test-backend-quick:
+	docker-compose exec backend pytest . -m "not email"

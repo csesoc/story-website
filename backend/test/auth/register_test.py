@@ -4,6 +4,8 @@ import poplib
 import requests
 
 # Imports for pytest
+import pytest
+
 from test.helpers import clear_all, db_add_user
 from test.fixtures import app, client
 
@@ -64,6 +66,7 @@ def test_duplicate_username(client):
     assert response.status_code == 400
 
 
+@pytest.mark.email
 def test_success(client):
     clear_all()
 

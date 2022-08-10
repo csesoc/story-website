@@ -1,3 +1,7 @@
+import email
+from email.message import Message
+import os
+import poplib
 from common.redis import clear_redis
 from database.database import clear_database
 from database.user import add_user
@@ -34,3 +38,13 @@ def get_cookie_from_header(response, cookie_name):
 def generate_csrf_header(response):
     csrf_token = get_cookie_from_header(response, "csrf_access_token")["csrf_access_token"]
     return {"X-CSRF-TOKEN": csrf_token}
+
+def get_most_recent_email() -> Message:
+    mailbox = poplib.POP3("pop3.mailtrap.io", 1100)
+    mailbox.user(os.environ["MAILTRAP_USERNAME"])
+    mailbox.pass_(os.environ["MAILTRAP_PASSWORD"])
+
+    raw_email = b"\n".join(mailbox.retr(1)[1])
+    parsed_email = email.message_from_bytes(raw_email)
+
+    return parsed_email

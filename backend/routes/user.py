@@ -151,25 +151,10 @@ def reset_email():
     response = jsonify({})
     return response, 200
 
-    '''
-    {
-    token: token (in cookie)
-    reset_code: string
-    }
-    '''
-    '''
-#     if (json['reset_code'] not match the code in database for user):
-#         raise AuthError("The reset code is wrong.")
-#     else:
-#         reset email.
-#     '''
-
 
 
 @user.route("/reset_password/request", methods=["POST"])
 def reset_password_request():
-#     json = request.get_json()
-#     return jsonify({})
 
     json = request.get_json()
     '''
@@ -215,4 +200,3 @@ def reset_password_request():
     mail.send(message)
     response = jsonify({})
     return response, 200
-

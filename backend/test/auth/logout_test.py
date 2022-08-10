@@ -21,4 +21,3 @@ def test_success(client):
 
     # Check there's no more cookies
     assert len(client.cookie_jar) == 0
-    

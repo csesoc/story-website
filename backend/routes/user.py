@@ -99,7 +99,6 @@ def reset_email_request():
         normalised = validate_email(json['email']).email
     except EmailNotValidError as e:
         raise RequestError(description="Invalid email") from e
-
     id = get_jwt_identity()
     # user_data = User.get(id)
 
@@ -115,8 +114,7 @@ def reset_email_request():
     pipeline.execute()
 
     url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
-
-    html = render_template("activate.html", reset_code=url)
+    html = render_template("email_request.html", reset_code=url)
 
     # Send it over to email
     message = Message(
@@ -131,10 +129,6 @@ def reset_email_request():
     response = jsonify({})
 
     return response, 200
-
-
-
-
     
 @user.route("/reset_email/reset", methods=['POST'])
 def reset_email():
@@ -172,8 +166,53 @@ def reset_email():
 
 
 
-# @user.route("/reset_password/request", methods=["POST"])
-# def reset_password_request():
+@user.route("/reset_password/request", methods=["POST"])
+def reset_password_request():
 #     json = request.get_json()
 #     return jsonify({})
+
+    json = request.get_json()
+    '''
+    {
+        token: token (in cookies)
+        email: string
+    }
+    '''
+    try:
+        verify_jwt_in_request()
+    except:
+        raise AuthError("Invalid token")
+
+    try:
+        normalised = validate_email(json['email']).email
+    except EmailNotValidError as e:
+        raise RequestError(description="Invalid email") from e
+
+    id = get_jwt_identity()
+    # user_data = User.get(id)
+
+    code = verify_serialiser.dumps(json["email"])
+    data = {
+        "email": normalised,
+    }
+    # We use a pipeline here to ensure these instructions are atomic
+    pipeline = cache.pipeline()
+    pipeline.hset(f"password_reset_code:{code}", mapping=data)
+    pipeline.expire(f"password_reset_code:{code}", timedelta(hours=1))
+    pipeline.execute()
+
+    url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
+    html = render_template("email_request.html", reset_code=url)
+
+    # Send it over to email
+    message = Message(
+        "Email Request for Week in Wonderland",
+        sender="weekinwonderland@csesoc.org.au",
+        recipients=[json["email"]],
+        html=html
+    )
+
+    mail.send(message)
+    response = jsonify({})
+    return response, 200
 

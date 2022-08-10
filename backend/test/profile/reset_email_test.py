@@ -4,7 +4,7 @@ import poplib
 import re
 
 # Imports for pytest
-from test.helpers import clear_all, db_add_user
+from test.helpers import clear_all, db_add_user,get_cookie_from_response
 from test.fixtures import app, client
 
 ## HELPER FUNCTIONS
@@ -35,9 +35,12 @@ def test_email_request(client):
         "username": "asdf"
     }
 
+    csrf_token = get_cookie_from_response(response, "csrf_access_token")["csrf_access_token"]
+    csrf_headers = {"X-CSRF-TOKEN": csrf_token}
+
     reset = client.post("/user/reset_email/request", json={
         "email": "numail@gmail.com"
-    })
+    },headers=csrf_headers)
     
     assert reset.status_code == 200
 
@@ -59,8 +62,11 @@ def test_email_request_invalida_email(client):
         "username": "asdf"
     }
 
+    csrf_token = get_cookie_from_response(response, "csrf_access_token")["csrf_access_token"]
+    csrf_headers = {"X-CSRF-TOKEN": csrf_token}
+
     reset = client.post("/user/reset_email/request", json={
         "email": "chungas"
-    })
+    },headers=csrf_headers)
     
-    assert reset.status_code == 200
+    assert reset.status_code == 400

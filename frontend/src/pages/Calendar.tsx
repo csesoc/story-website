@@ -29,7 +29,7 @@ export interface part {
 interface buttonPos {
   left: number,
   top: number,
-  radius: number,
+  diameter: number,
   tooltip: "top" | "bottom" | "left" | "right"
 }
 
@@ -71,13 +71,14 @@ const Calendar: React.FC<{}> = () => {
     }
   ];
 
-  const defaultStatus : number[] = [0, 1, 2];
+  const defaultStatus : number[] = [0, 1, 2, -1];
 
   const [times, setTimes] = useState(0);
   const [showPuzzles, setShowPuzzles] = useState(defaultProblems);
   const [puzzleStatus, setPuzzleStatus] = useState(defaultStatus);
 
   useEffect(() => {
+
     const verifyToken = async () => {
       const result = await fetch(`${BACKEND_URI}/verify`, )
     };
@@ -121,19 +122,25 @@ const Calendar: React.FC<{}> = () => {
     {
       left: 10,
       top: 10,
-      radius: 10,
+      diameter: 10,
       tooltip: "bottom"
     },
     {
       left: 30,
       top: 20,
-      radius: 20,
+      diameter: 20,
       tooltip: "right"
     },
     { left: 50,
       top: 60,
-      radius: 15,
+      diameter: 15,
       tooltip: "top"
+    },
+    {
+      left: 80,
+      top: 40,
+      diameter: 10,
+      tooltip: "left"
     }
   ];
 
@@ -145,6 +152,16 @@ const Calendar: React.FC<{}> = () => {
         </div>
         <div className={styles.calendarRight}>
           <div className={styles.calendarImgContainer}>
+            <svg className={styles.calendarImgSvg} viewBox={"0 0 " + (imageAspect * 100) + " 100"} stroke="#FFD361">
+              {buttons.map((pos : buttonPos, id : number, arr : buttonPos[]) => (id > 0) && <line
+                strokeWidth={1+"px"}
+                strokeDasharray="1"
+                x1={arr[id - 1].left * imageAspect}
+                y1={arr[id - 1].top}
+                x2={arr[id].left * imageAspect}
+                y2={arr[id].top}
+              />)}
+            </svg>
             <img className={styles.calendarImgBack} src={calendarImgMono}/>
             {buttons.map((pos : buttonPos, id : number) => <OverlayTrigger
                 placement = {pos.tooltip}
@@ -152,8 +169,12 @@ const Calendar: React.FC<{}> = () => {
                   <Popover className={styles.calendarPopover}>
                     <Popover.Header>Day {id + 1}</Popover.Header>
                     <Popover.Body className={styles.calendarPopoverBody}>
-                      <img className={styles.calendarStar} src={(puzzleStatus[id] > 0) ? starColoured : starMono}/>
-                      <img className={styles.calendarStar} src={(puzzleStatus[id] > 1) ? starColoured : starMono}/>
+                      {
+                        (puzzleStatus[id] != -1) ? <>
+                          <img className={styles.calendarStar} src={(puzzleStatus[id] > 0) ? starColoured : starMono}/>
+                          <img className={styles.calendarStar} src={(puzzleStatus[id] > 1) ? starColoured : starMono}/>
+                        </> : <span>Coming soon!</span>
+                      }
                     </Popover.Body>
                   </Popover>
                 }
@@ -161,23 +182,24 @@ const Calendar: React.FC<{}> = () => {
               <div 
                 className={styles.calendarButton} 
                 style={{
-                  left: pos.left + '%', 
-                  top: pos.top + '%',
-                  width: pos.radius + '%',
+                  left: (pos.left - (pos.diameter / 2)) + '%', 
+                  top: (pos.top - (pos.diameter * imageAspect / 2)) + '%',
+                  width: pos.diameter + '%',
                   /* I'm setting everything to be relative to the width of the image because
                   responsiveness, but since the aspect ratio of the image is 16:9, we have this weird hack.
                   */
-                height: (pos.radius * imageAspect) + '%',
-                backgroundImage: "url(" + calendarImgColoured + ")",
-                /* More weird stuff: we need to somehow set the background image of this button
-                to be negatively offset so that it lines up perfectly with the monochrome
-                background. I don't know how this works but it does, so I don't ask too many questions.
-                */
-                backgroundPosition: (pos.left / (100 - pos.radius) * 100) + "% " + (pos.top / (100 -pos.radius * imageAspect) * 100) + "%",
-                backgroundSize: (100 / (pos.radius) * 100) + "%"
+                  height: (pos.diameter * imageAspect) + '%',
+                  backgroundImage: "url(" + ((puzzleStatus[id] == -1) ? calendarImgMono : calendarImgColoured) + ")",
+                  /* More weird stuff: we need to somehow set the background image of this button
+                  to be negatively offset so that it lines up perfectly with the monochrome
+                  background. I don't know how this works but it does, so I don't ask too many questions.
+                  */
+                  backgroundPosition: ((pos.left - (pos.diameter / 2)) / (100 - pos.diameter) * 100) + "% " + 
+                                      ((pos.top - (pos.diameter * imageAspect / 2)) / (100 -pos.diameter * imageAspect) * 100) + "%",
+                  backgroundSize: (100 / (pos.diameter) * 100) + "%"
               }} 
               onClick={() => {
-                nav("/2022/problem/" + (id + 1));
+                if (puzzleStatus[id] == -1) return; nav("/2022/problem/" + (id + 1));
               }}
               />
             </OverlayTrigger>)}

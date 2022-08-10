@@ -1,58 +1,93 @@
-import os
-import requests
+import pytest
 
-from database.database import clear_database
-# Used for testing purposes!
-from database.user import add_user
-from models.user import User
+# Import for pytest
+from flask.testing import FlaskClient
+from test.helpers import clear_all, db_add_user, generate_csrf_header
+from test.fixtures import app, client
 
-def testing_add_user(email, username, password):
-    user = User(email, username, User.hash_password(password))
-    add_user(*user.to_tuple())
 
-def login(json):
-    response = requests.post(f"{os.environ['TESTING_ADDRESS']}/auth/login", json=json)
-    return response
+def test_no_users(client):
+    clear_all()
 
-def test_no_users():
-    clear_database()
-
-    response = login({
+    response = client.post("/auth/login", json={
         "email": "asdfghjkl@gmail.com",
         "password": "foobar"
     })
 
-    assert response.status_code == 400
+    assert response.status_code == 401
 
-def test_invalid_email():
-    clear_database()
 
-    testing_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+def test_invalid_email(client):
+    clear_all()
 
-    response = login({
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+
+    response = client.post("/auth/login", json={
         "email": "foobar@gmail.com",
         "password": "foobaz"
     })
 
-    assert response.status_code == 400
+    assert response.status_code == 401
 
-def test_wrong_password():
-    clear_database()
 
-    testing_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+def test_wrong_password(client):
+    clear_all()
 
-    response = login({
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+
+    response = client.post("/auth/login", json={
         "email": "asdfghjkl@gmail.com",
         "password": "foobaz"
     })
 
-    assert response.status_code == 400
+    assert response.status_code == 401
 
-def test_success():
-    clear_database()
+def test_success(client):
+    clear_all()
 
-    testing_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
 
-    response = login({
-        ""
+    response = client.post("/auth/login", json={
+        "email": "asdfghjkl@gmail.com",
+        "password": "foobar"
     })
+
+    assert response.status_code == 200
+
+def test_lockout(client):
+    clear_all()
+
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+
+    # Incorrect login 3 times
+    for _ in range(3):
+        response = client.post("/auth/login", json={
+            "email": "asdfghjkl@gmail.com",
+            "password": "foobaz"
+        })
+
+        assert response.status_code == 401
+
+    # Now when we login, it should lock user out
+    response = client.post("/auth/login", json={
+        "email": "asdfghjkl@gmail.com",
+        "password": "foobar"
+    })
+
+    assert response.status_code == 401
+
+def test_protected_route(client: FlaskClient):
+    clear_all()
+
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+
+    response = client.post("/auth/login", json={
+        "email": "asdfghjkl@gmail.com",
+        "password": "foobar"
+    })
+
+    assert response.status_code == 200
+
+    response = client.post("/auth/protected", headers=generate_csrf_header(response))
+
+    assert response.status_code == 200

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { BACKEND_URI } from "src/config";
 
-const Home: React.FC<{}> = () => {
+const Stats: React.FC<{}> = () => {
   const [times, setTimes] = useState(0);
 
   useEffect(() => {
@@ -19,10 +19,10 @@ const Home: React.FC<{}> = () => {
     <>
       <Container className="justify-content-center text-center">
         <p>You have clicked this button {times} times.</p>
-        <Button onClick={() => setTimes(times + 1)}>Home Page</Button>
+        <Button onClick={() => setTimes(times + 1)}>Stats Page</Button>
       </Container>
     </>
   )
 };
 
-export default Home;
+export default Stats;

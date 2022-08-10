@@ -1,10 +1,12 @@
 import os
 from flask import Blueprint, render_template, request, jsonify
 from flask_mail import Message
-from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
+from flask_jwt_extended import create_access_token, jwt_required, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
 
 from common.exceptions import AuthError
 from common.plugins import mail
+from common.redis import block, calculate_time, incorrect_attempts, is_blocked, register_incorrect
+from database.user import fetch_id
 from models.user import User
 
 # Constants
@@ -18,7 +20,24 @@ auth = Blueprint("auth", __name__)
 def login():
     json = request.get_json()
 
-    user = User.login(json["email"], json["password"])
+    id = fetch_id(json["email"])
+
+    if is_blocked(id):
+        raise AuthError()
+
+    try:
+        user = User.login(json["email"], json["password"])
+    except Exception as e:
+        register_incorrect(id)
+
+        attempts = incorrect_attempts(id)
+
+        if attempts >= 3:
+            block_time = calculate_time(attempts)
+            block(id, block_time)
+
+        raise e
+
     token = create_access_token(identity=user)
 
     response = jsonify({})
@@ -33,7 +52,7 @@ def register():
     
     # Fetch verification code
     code = User.register(json["email"], json["username"], json["password"])
-    url = f"{os.environ['TESTING_ADDRESS']}/register/verify/{code}"
+    url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
 
     html = render_template("activate.html", confirm_url=url)
 
@@ -51,10 +70,17 @@ def register():
 
     return response, 200
 
-@auth.route("/register/verify/<token>", methods=["POST"])
+@auth.route("/register/verify", methods=["POST"])
 def register_verify():
-    # TODO: fill in once we get custom email address
-    pass
+    json = request.get_json()
+
+    user = User.register_verify(json["token"])
+    cookie = create_access_token(identity=user)
+
+    response = jsonify({})
+    set_access_cookies(response, cookie)
+
+    return response, 200
 
 @auth.route("/verify_token", methods=["GET"])
 def verify_token():
@@ -65,10 +91,15 @@ def verify_token():
 
     return jsonify({}), 200
 
-@auth.route("/logout", methods=["DELETE"])
-@jwt_required()
+@auth.route("/logout", methods=["POST"])
 def logout():
     response = jsonify({})
     unset_jwt_cookies(response)
 
     return response, 200
+
+@jwt_required()
+@auth.route("/protected", methods=["POST"])
+def protected():
+    verify_jwt_in_request()
+    return jsonify({}), 200

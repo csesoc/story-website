@@ -20,6 +20,9 @@ itsdangerous = "*"
 [dev-packages]
 pytest = "*"
 requests = "*"
+freezegun = "*"
+fakeredis = "*"
+pytest-mock = "*"
 
 [requires]
 python_version = "3.8"

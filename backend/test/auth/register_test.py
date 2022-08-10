@@ -3,16 +3,9 @@ import os
 import poplib
 import requests
 
-from database.database import clear_database
-from database.user import add_user
-from models.user import User
-
-# TODO: refactor tests to use https://flask.palletsprojects.com/en/2.1.x/testing/
-
-
-def testing_add_user(email, username, password):
-    user = User(email, username, User.hash_password(password))
-    add_user(user)
+# Imports for pytest
+from test.helpers import clear_all, db_add_user
+from test.fixtures import app, client
 
 
 def register(json):
@@ -21,14 +14,14 @@ def register(json):
     return response
 
 
-def test_invalid_email():
-    clear_database()
+def test_invalid_email(client):
+    clear_all()
 
     # Frontend should detect whether an email address doesn't follow a
     # specific format, so we don't have to handle those errors here
     invalid_address = "foo@guaranteed.invalid"
 
-    response = register({
+    response = client.post("/auth/register", json={
         "email": invalid_address,
         "username": "Test",
         "password": "foobar123"
@@ -37,15 +30,15 @@ def test_invalid_email():
     assert response.status_code == 400
 
 
-def test_duplicate_email():
-    clear_database()
+def test_duplicate_email(client):
+    clear_all()
 
     reused_address = "asdfghjkl@gmail.com"
 
     # Register the user in the database directly, to avoid another email
-    testing_add_user(reused_address, "foo", "bar")
+    db_add_user(reused_address, "foo", "bar")
 
-    response = register({
+    response = client.post("/auth/register", json={
         "email": reused_address,
         "username": "foo",
         "password": "bar"
@@ -54,15 +47,15 @@ def test_duplicate_email():
     assert response.status_code == 400
 
 
-def test_duplicate_username():
-    clear_database()
+def test_duplicate_username(client):
+    clear_all()
 
     reused_username = "foo"
 
     # Register the user in the database directly
-    testing_add_user("asdfghjkl@gmail.com", reused_username, "bar")
+    db_add_user("asdfghjkl@gmail.com", reused_username, "bar")
 
-    response = register({
+    response = client.post("/auth/register", json={
         "email": "foobar@gmail.com",
         "username": reused_username,
         "password": "bar"
@@ -71,8 +64,8 @@ def test_duplicate_username():
     assert response.status_code == 400
 
 
-def test_success():
-    clear_database()
+def test_success(client):
+    clear_all()
 
     # Check that we get an email sent
     mailbox = poplib.POP3("pop3.mailtrap.io", 1100)
@@ -82,7 +75,7 @@ def test_success():
     (before, _) = mailbox.stat()
 
     # Register normally
-    response = register({
+    response = client.post("/auth/register", json={
         "email": "asdfghjkl@gmail.com",
         "username": "asdf",
         "password": "foobar123"

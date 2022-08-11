@@ -7,7 +7,7 @@ from email_validator import validate_email, EmailNotValidError
 from itsdangerous import URLSafeTimedSerializer
 
 from common.exceptions import AuthError, InvalidError, RequestError
-from common.redis import cache
+from common.redis import add_verification, cache, get_verification
 from database.user import add_user, email_exists, fetch_user, get_user_info, username_exists
 
 hasher = PasswordHasher(
@@ -64,31 +64,19 @@ class User:
             "password": hashed
         }
 
-        # We use a pipeline here to ensure these instructions are atomic
-        pipeline = cache.pipeline()
-
-        pipeline.hset(f"register:{code}", mapping=data)
-        pipeline.expire(f"register:{code}", timedelta(hours=1))
-
-        pipeline.execute()
+        add_verification(data, code)
 
         return code
 
     @staticmethod
-    def register_verify(token):
-        cache_key = f"register:{token}"
+    def register_verify(code):
+        result = get_verification(code)
 
-        if not cache.exists(cache_key):
+        if result is None:
             raise AuthError("Token expired or does not correspond to registering user")
 
-        result = cache.hgetall(cache_key)
-        stringified = {}
-        
-        for key, value in result.items():
-            stringified[key.decode()] = value.decode()
-
-        id = add_user(stringified["email"], stringified["username"], stringified["password"])
-        return User(id, stringified["email"], stringified["username"], stringified["password"])
+        id = add_user(result["email"], result["username"], result["password"])
+        return User(id, result["email"], result["username"], result["password"])
 
     @staticmethod
     def login(email, password):

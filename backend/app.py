@@ -10,6 +10,7 @@ from common.plugins import jwt, mail
 from database.database import db
 from routes.auth import auth
 from routes.puzzle import puzzle
+from routes.leaderboard import leaderboard
 from routes.user import user
 
 
@@ -61,6 +62,7 @@ def create_app():
     # Register smaller parts of the API
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(puzzle, url_prefix="/puzzle")
+    app.register_blueprint(leaderboard, url_prefix="/leaderboard")
     app.register_blueprint(user, url_prefix="/user")
 
     # Register our error handler

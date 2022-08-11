@@ -10,7 +10,6 @@ def app(mocker):
     # Mock only where the data is being used
     mocker.patch("app.mail", mailbox)
     mocker.patch("common.plugins.mail", mailbox)
-    mocker.patch("routes.auth.mail", mailbox)
 
     app = create_app({"TESTING": True})
     yield app

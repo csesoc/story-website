@@ -65,7 +65,9 @@ def test_duplicate_username(client):
     assert response.status_code == 400
 
 
-def test_register_success(client):
+def test_register_success(client, mocker):
+    mocker.patch("routes.auth.mail", mailbox)
+
     clear_all()
 
     # Check that we get an email sent

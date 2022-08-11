@@ -396,3 +396,4 @@ def add_user_with_uid(uid, email, username, password):
     """
     cur.execute(query)
     conn.commit()
+

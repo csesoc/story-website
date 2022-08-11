@@ -20,12 +20,9 @@ db = ThreadedConnectionPool(
 
 def clear_database():
     conn = db.getconn()
-    print(user, password, host, port, database)
-
 
     with conn.cursor() as cursor:
         cursor.execute(f"""SELECT truncate_tables();""")
         conn.commit()
     
     db.putconn(conn)
-

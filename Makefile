@@ -42,7 +42,7 @@ test-backend:
 	docker-compose exec backend pytest . $(args)
 
 test-puzzle:
-	docker-compose exec backend pytest ./test/puzzle $(args)
+	docker-compose exec backend pytest -vv -s ./test/puzzle $(args)
 
 test-leaderboard:
-	docker-compose exec backend pytest ./test/leaderboard $(args)
+	docker-compose exec backend pytest -vv -s ./test/leaderboard $(args)

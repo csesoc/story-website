@@ -83,7 +83,7 @@ create unique index statsIndex on Stats (uid, cid);
 CREATE OR REPLACE FUNCTION update_stats() RETURNS trigger AS $$
 BEGIN
     insert into Stats as s
-    values (new.uid, (select c.cid from Competitions c join Questions q on q.cid = c.cid join Parts p on p.qid = q.qid where p.pid = new.pid), new.points, 1)
+    values (new.uid, (select c.cid from Competitions c join Questions q on q.cid = c.cid join Parts p on p.qid = q.qid where p.pid = new.pid), 1, new.points)
     on conflict (uid, cid)
     do
         update set  score = s.score + new.points, numStars = s.numStars + 1

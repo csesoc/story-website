@@ -97,8 +97,6 @@ def reset_email_request():
         verify_jwt_in_request()
     except:
         raise AuthError("Invalid token")
-=======
->>>>>>> main
 
 
 

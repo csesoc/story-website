@@ -1,6 +1,8 @@
 import os
 import psycopg2
 
+from models.user import User
+
 user = os.environ["POSTGRES_USER"]
 password = os.environ["POSTGRES_PASSWORD"]
 host = os.environ["POSTGRES_HOST"]
@@ -94,6 +96,17 @@ def getCompetitionQuestions(compName):
         select * from Parts p
         join Questions q on p.qid = q.qid
         join Competitions c on q.cid = c.cid
+        where c.name = '{compName}';
+    """
+    cur.execute(query)
+
+    # only one entry should be returned since day number is unique
+    return cur.fetchall()
+
+# Gets a competition
+def getCompetition(compName):
+    query = f"""
+        select * from Competitions c
         where c.name = '{compName}';
     """
     cur.execute(query)
@@ -220,7 +233,8 @@ def updateUsername(username, uid):
 # TODO: fix tiebreakers in rankings
 def getNLeaderboard(compName, n):
     query = f"""
-        select * from Stats s
+        select u.github, u.username, s.numStars, s.score from Users u
+        join Stats s on s.uid = u.uid
         join Competitions c on s.cid = c.cid
         where c.name = '{compName}'
         order by s.score DESC
@@ -236,7 +250,7 @@ def getNLeaderboard(compName, n):
 # TODO: left outer join may not work! Needs to be tested on people with no puzzle input.
 def searchLeaderboard(compName, prefix, n):
     query = f"""
-        select u.github, u.username, s.numStats, s.score from Users u
+        select u.github, u.username, s.numStars, s.score from Users u
         left outer join Stats s on s.uid = u.uid
         join Competitions c on s.cid = c.cid
         where c.name = '{compName}' and (u.username like '{prefix}%' or u.github like '{prefix}%')
@@ -255,7 +269,7 @@ def getRankLeaderboard(compName, uid):
     query = f"""
         select position
         from (
-            select *, row_number() over(
+            select u.uid as bigUid, *, row_number() over(
                 order by s.score DESC
                 )
             as position
@@ -263,8 +277,7 @@ def getRankLeaderboard(compName, uid):
         left outer join Stats s on s.uid = u.uid
         join Competitions c on s.cid = c.cid
         where c.name = '{compName}'
-        ) result
-        where u.uid = '{uid}';
+        ) result where bigUid = {uid};
     """
     cur.execute(query)
 
@@ -375,3 +388,11 @@ def getNumSolved(compName, dayNum, partNum, uid):
     cur.execute(query)
 
     return cur.fetchall()
+
+def add_user_with_uid(uid, email, username, password):
+    """Adds a user to the database, returning their ID."""
+    query = f""" 
+        INSERT INTO Users VALUES ({uid}, '{email}', 'blah', '{username}', '{User.hash_password(password)}');
+    """
+    cur.execute(query)
+    conn.commit()

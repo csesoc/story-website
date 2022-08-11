@@ -8,7 +8,7 @@ from puzzles.calendar import calendar
 import re
 
 from common.exceptions import AuthError, RequestError
-from common.database import getCompetitionQuestions, getNLeaderboard, searchLeaderboard, getRankLeaderboard
+from common.database import getCompetition, getNLeaderboard, searchLeaderboard, getRankLeaderboard
 from models.user import User
 from itsdangerous import URLSafeTimedSerializer
 
@@ -30,7 +30,7 @@ def get_leaderboard_twenty():
     # }
 
     competition = request.get_json()['competition']
-    if getCompetitionQuestions(competition) == []:
+    if getCompetition(competition) == []:
         raise RequestError("The competition doesn't exist")   
 
 
@@ -39,13 +39,12 @@ def get_leaderboard_twenty():
 
         id = get_jwt_identity()     
 
-        prefix = request.args.get('string')
+        prefix = request.get_json()['search']
         returnList = []
 
         if (prefix is None or prefix == ''):
 
             scores = getNLeaderboard(competition, 20)
-            print(scores)
             for (idx, score) in enumerate(scores):
                 returnList.append({
                   "github": score[0],
@@ -86,7 +85,7 @@ def get_leaderboard_position():
     # position: integer
     # }
     competition = request.get_json()['competition']
-    if getCompetitionQuestions(competition) == []:
+    if getCompetition(competition) == []:
         raise RequestError("The competition doesn't exist")
 
     try:
@@ -94,7 +93,7 @@ def get_leaderboard_position():
         id = get_jwt_identity()
 
         return jsonify({
-            "position": getRankLeaderboard(competition, id)
+            "position": getRankLeaderboard(competition, id)[0][0]
         })
     except:
         raise AuthError("Invalid token")

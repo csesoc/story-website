@@ -1,12 +1,18 @@
-import pytest
-
 from app import create_app
 
-@pytest.fixture()
-def app():
-    app = create_app()
-    app.config["TESTING"] = True
+import pytest
+from pytest_mock import mocker
 
+from test.mock.mock_mail import mailbox
+
+@pytest.fixture()
+def app(mocker):
+    # Mock only where the data is being used
+    mocker.patch("app.mail", mailbox)
+    mocker.patch("common.plugins.mail", mailbox)
+    mocker.patch("routes.auth.mail", mailbox)
+
+    app = create_app({"TESTING": True})
     yield app
 
 @pytest.fixture()

@@ -4,6 +4,7 @@ from database.user import add_user
 from database.puzzle import add_part, add_question, add_competition
 from models.user import User
 
+## DATABASE FUNCTIONS
 
 def db_add_competition(name):
     return add_competition(name)
@@ -23,6 +24,8 @@ def clear_all():
 
     # Clear database
     clear_database()
+
+## HEADER FUNCTIONS
 
 def get_cookie_from_header(response, cookie_name):
     cookie_headers = response.headers.getlist("Set-Cookie")
@@ -44,3 +47,8 @@ def get_cookie_from_header(response, cookie_name):
 def generate_csrf_header(response):
     csrf_token = get_cookie_from_header(response, "csrf_access_token")["csrf_access_token"]
     return {"X-CSRF-TOKEN": csrf_token}
+
+## EMAIL MOCKING
+
+def get_emails():
+    pass

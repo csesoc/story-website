@@ -38,6 +38,8 @@ def test_invalid_token(client):
 # TODO: try working on this, if not feasible delete this test and test manually
 @pytest.mark.skip()
 def test_token_expired(client, mocker):
+    clear_all()
+    
     fake = fakeredis.FakeStrictRedis()
     mocker.patch.object(common.redis, "cache", return_value=fake)
 

@@ -7,7 +7,7 @@ from email_validator import validate_email, EmailNotValidError
 from itsdangerous import URLSafeTimedSerializer
 
 from common.exceptions import AuthError, InvalidError, RequestError
-from common.redis import add_verification, cache, get_verification
+from common.redis import add_verification, get_verification
 from database.user import add_user, email_exists, fetch_user, get_user_info, username_exists
 
 hasher = PasswordHasher(

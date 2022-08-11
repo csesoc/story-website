@@ -1,11 +1,12 @@
-import email
 import os
-import poplib
 import requests
 
 # Imports for pytest
+from pytest_mock import mocker
+
 from test.helpers import clear_all, db_add_user
 from test.fixtures import app, client
+from test.mock.mock_mail import mailbox
 
 
 def register(json):
@@ -64,15 +65,11 @@ def test_duplicate_username(client):
     assert response.status_code == 400
 
 
-def test_success(client):
+def test_register_success(client):
     clear_all()
 
     # Check that we get an email sent
-    mailbox = poplib.POP3("pop3.mailtrap.io", 1100)
-    mailbox.user(os.environ["MAILTRAP_USERNAME"])
-    mailbox.pass_(os.environ["MAILTRAP_PASSWORD"])
-
-    (before, _) = mailbox.stat()
+    before = len(mailbox.messages)
 
     # Register normally
     response = client.post("/auth/register", json={
@@ -84,12 +81,11 @@ def test_success(client):
     assert response.status_code == 200
 
     # Check that an email was in fact sent
-    (after, _) = mailbox.stat()
+    after = len(mailbox.messages)
 
     assert after == before + 1
 
     # Verify recipient
-    raw_email = b"\n".join(mailbox.retr(1)[1])
-    parsed_email = email.message_from_bytes(raw_email)
+    parsed_email = mailbox.get_message(-1)
 
     assert parsed_email["To"] == "asdfghjkl@gmail.com"

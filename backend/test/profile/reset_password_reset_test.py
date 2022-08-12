@@ -17,7 +17,7 @@ def find_token(contents):
 
 ### test starts here
 
-def test_email_reset(client):
+def test_password_reset(client):
     clear_all()
 
     db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
@@ -35,7 +35,7 @@ def test_email_reset(client):
         "username": "asdf"
     }
 
-    reset = client.post("/user/reset_email/request", json={
+    reset = client.post("/user/reset_password/request", json={
         "email": "numail@gmail.com"
     },headers=generate_csrf_header(response))
     
@@ -58,16 +58,23 @@ def test_email_reset(client):
     # Extract the token from the HTML
     token = find_token(content)
 
-    response = client.post("/user/reset_email/reset", json={
+    response = client.post("/user/reset_password/reset", json={
         "reset_code": token,
+        "password": "ghjkl"
     })
 
     assert response.status_code == 200
-    profile = client.get("/user/profile")
-    assert profile.status_code == 200
-    assert profile.json == {
-        "email": "numail@gmail.com",
-        "username": "asdf"
-    }
 
+    response = client.post("/auth/logout")
 
+    assert response.status_code == 200
+
+    # Check there's no more cookies
+    assert len(client.cookie_jar) == 0
+
+    response = client.post("/auth/login", json={
+        "email": "asdfghjkl@gmail.com",
+        "password": "ghjkl"
+    })
+    
+    assert response.status_code == 200

@@ -7,7 +7,7 @@ import os
 
 from datetime import timedelta
 from common.exceptions import AuthError, RequestError
-from common.database import getCompetitionQuestions, getUserStatsPerComp, updateUsername, updateEmail
+from common.database import getCompetitionQuestions, getUserStatsPerComp, updateUsername, updateEmail, updatePassword
 from database.user import username_exists
 from models.user import User
 from itsdangerous import URLSafeTimedSerializer
@@ -17,22 +17,20 @@ from common.plugins import mail
 user = Blueprint("user", __name__)
 verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
-@jwt_required()
 @user.route("/profile", methods=["GET"])
 def get_profile():
     try:
         verify_jwt_in_request()
         id = get_jwt_identity()
-
-        user_data = User.get(id)
-
-        return jsonify({
-            "email": user_data.email,
-            "username": user_data.username
-        })
     except:
         raise AuthError("Invalid Token")
 
+    user_data = User.get(id)
+
+    return jsonify({
+        "email": user_data.email,
+        "username": user_data.username
+    })
 
 @jwt_required()
 @user.route("/stats", methods=['GET'])
@@ -151,32 +149,26 @@ def reset_email():
     response = jsonify({})
     return response, 200
 
-
-
 @user.route("/reset_password/request", methods=["POST"])
 def reset_password_request():
-
-    json = request.get_json()
     '''
     {
         token: token (in cookies)
-        email: string
     }
     '''
     try:
         verify_jwt_in_request()
+        id = get_jwt_identity()
     except:
         raise AuthError("Invalid token")
 
+    user_data = User.get(id)
     try:
-        normalised = validate_email(json['email']).email
+        normalised = validate_email(user_data['email']).email
     except EmailNotValidError as e:
         raise RequestError(description="Invalid email") from e
 
-    id = get_jwt_identity()
-    # user_data = User.get(id)
-
-    code = verify_serialiser.dumps(json["email"])
+    code = verify_serialiser.dumps(normalised)
     data = {
         "email": normalised,
     }
@@ -193,10 +185,43 @@ def reset_password_request():
     message = Message(
         "Email Request for Week in Wonderland",
         sender="weekinwonderland@csesoc.org.au",
-        recipients=[json["email"]],
+        recipients=[normalised],
         html=html
     )
 
     mail.send(message)
+    response = jsonify({})
+    return response, 200
+
+@user.route("/reset_password/reset", methods=["POST"])
+def reset_password():
+    '''
+    {
+        token: token (in cookies)
+        reset_code: string
+        password: string
+    }
+    '''
+    try:
+        verify_jwt_in_request()
+        id = get_jwt_identity()
+    except:
+        raise AuthError("Invalid token")
+
+    json = request.get_json()
+
+    #user_data = User.get(id)
+
+    cache_key = f"email_reset_code:{json['reset_code']}"
+    if not cache.exists(cache_key):
+        raise AuthError("Reset code expired or does not correspond to registering user")
+    result = cache.hgetall(cache_key)
+    
+    '''    for key, value in result.items():
+        stringified[key.decode()] = value.decode()
+    updateEmail(stringified["email"], id)'''
+
+    updatePassword(json["password"], id)
+
     response = jsonify({})
     return response, 200

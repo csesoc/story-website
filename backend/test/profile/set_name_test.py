@@ -4,7 +4,7 @@ import poplib
 import re
 
 # Imports for pytest
-from test.helpers import clear_all, db_add_user, get_cookie_from_response
+from test.helpers import clear_all, db_add_user, generate_csrf_header
 from test.fixtures import app, client
 
 ## HELPER FUNCTIONS
@@ -35,12 +35,9 @@ def test_set_name(client):
         "username": "asdf"
     }
 
-    csrf_token = get_cookie_from_response(response, "csrf_access_token")["csrf_access_token"]
-
-    csrf_headers = {"X-CSRF-TOKEN": csrf_token}
     change = client.post("/user/set_name", json={
         "username": "nunu"
-    }, headers=csrf_headers)
+    }, headers=generate_csrf_header(response))
 
     assert change.status_code == 200
 
@@ -71,10 +68,7 @@ def test_set_name_repeated(client):
         "username": "asdf"
     }
 
-    csrf_token = get_cookie_from_response(response, "csrf_access_token")["csrf_access_token"]
-
-    csrf_headers = {"X-CSRF-TOKEN": csrf_token}
     change = client.post("/user/set_name", json={
         "username": reused_username
-    }, headers=csrf_headers)
+    }, headers=generate_csrf_header(response))
     change.status_code == 400

@@ -17,28 +17,28 @@ def find_token(contents):
 
 ### test starts here
 
-def test_profile(client):
+def test_email_request(client):
     clear_all()
 
     db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+
     response = client.post("/auth/login", json={
         "email": "asdfghjkl@gmail.com",
         "password": "foobar"
     })
     assert response.status_code == 200
-    
-    profile2 = client.get("/user/profile", headers=generate_csrf_header(response))
-    assert profile2.status_code == 200
-    assert profile2.json == {
+
+    profile = client.get("/user/profile")
+    assert profile.status_code == 200
+    assert profile.json == {
         "email": "asdfghjkl@gmail.com",
         "username": "asdf"
     }
 
-def test_profile_fail(client):
-    clear_all()
+    reset = client.post("/user/reset_password/request", json={
+    },headers=generate_csrf_header(response))
+    
+    assert reset.status_code == 200
 
-    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
-
-    profile2 = client.get("/user/profile")
-    assert profile2.status_code == 401
-
+def test_email_request_invalid_token(client):
+    pass

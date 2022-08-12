@@ -38,7 +38,6 @@ def login():
         raise e
 
     token = create_access_token(identity=user)
-
     response = jsonify({})
     set_access_cookies(response, token)
 

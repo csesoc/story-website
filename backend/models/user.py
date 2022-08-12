@@ -107,3 +107,4 @@ class User:
 
         id, email, github_username, username, password = result
 
+        return User(id, email, username, password, github_username)

@@ -17,7 +17,7 @@ def find_token(contents):
 
 ### test starts here
 
-def test_email_request(client):
+def test_password_test(client):
     clear_all()
 
     db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
@@ -40,5 +40,5 @@ def test_email_request(client):
     
     assert reset.status_code == 200
 
-def test_email_request_invalid_token(client):
+def test_password_request_invalid_token(client):
     pass

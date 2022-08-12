@@ -230,7 +230,7 @@ def updateUsername(username, uid):
 def updateEmail(email, uid):
     query = f"""
         update Users
-        set email = '{email}'
+        set email = {email}
         where uid = {uid};
     """
     cur.execute(query)
@@ -239,22 +239,14 @@ def updateEmail(email, uid):
 def updatePassword(password, uid):
     query = f"""
         update Users
-        set password = '{password}'
+        set password = {password}
         where uid = {uid};
     """
     cur.execute(query)
     conn.commit()
 
-    '''
-    cursor.close()
-    conn.close()
-    '''
-# DO NOT EVER EXECUTE THIS FUNCTION BRUH
-def dropDatabase():
 # Finds top N of a leaderboard, where N is a positive integer
 # Assumes comp name is legit
-    pass
-
 
 # TODO: fix tiebreakers in rankings
 def getNLeaderboard(compName, n):
@@ -422,7 +414,3 @@ def add_user_with_uid(uid, email, username, password):
     """
     cur.execute(query)
     conn.commit()
-
-def clear_database():
-    conn = get_connection()
-    cursor = conn.cursor()

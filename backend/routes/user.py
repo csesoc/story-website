@@ -1,3 +1,4 @@
+import email
 from flask import Blueprint, jsonify, request, render_template
 from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request, get_jwt_identity
 from flask_mail import Message
@@ -60,14 +61,14 @@ def set_name():
     # token: token (in cookies)
     # username: string
     # }
-    
     try:
-        verify_jwt_in_request() # Something is going very wrong with the token and I have no idea what's happening
+        verify_jwt_in_request()
         id = get_jwt_identity()
     except Exception as e:
         print(e)
         raise AuthError("Invalid token")
-    user_data = User.get(id)
+
+    # user_data = User.get(id)
     json = request.get_json()
     username = json["username"]
 
@@ -76,7 +77,6 @@ def set_name():
         raise RequestError(description="Username already used")
     else:
         updateUsername(username, id)
-
     return jsonify({})
 
 @jwt_required()
@@ -93,36 +93,40 @@ def reset_email_request():
         verify_jwt_in_request()
     except:
         raise AuthError("Invalid token")
+    print("pingas")
     try:
         normalised = validate_email(json['email']).email
     except EmailNotValidError as e:
         raise RequestError(description="Invalid email") from e
     id = get_jwt_identity()
+    print("pingas2")
     # user_data = User.get(id)
 
-    code = verify_serialiser.dumps(json["email"])
+    code = verify_serialiser.dumps(normalised)
     data = {
         "email": normalised,
     }
-
+    print("pingas3")
     # We use a pipeline here to ensure these instructions are atomic
     pipeline = cache.pipeline()
     pipeline.hset(f"email_reset_code:{code}", mapping=data)
     pipeline.expire(f"email_reset_code:{code}", timedelta(hours=1))
     pipeline.execute()
-
+    print("pingas4")
     url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
     html = render_template("email_request.html", reset_code=url)
-
     # Send it over to email
     message = Message(
         "Email Request for Week in Wonderland",
         sender="weekinwonderland@csesoc.org.au",
-        recipients=[json["email"]],
+        recipients=[normalised],
         html=html
     )
+    print("pingas5")
 
     mail.send(message)
+
+    print("pingas5")
 
     response = jsonify({})
 
@@ -162,15 +166,11 @@ def reset_password_request():
     except:
         raise AuthError("Invalid token")
 
-    user_data = User.get(id)
-    try:
-        normalised = validate_email(user_data['email']).email
-    except EmailNotValidError as e:
-        raise RequestError(description="Invalid email") from e
+    email = User.get(id).email
 
-    code = verify_serialiser.dumps(normalised)
+    code = verify_serialiser.dumps(email)
     data = {
-        "email": normalised,
+        "email": email,
     }
     # We use a pipeline here to ensure these instructions are atomic
     pipeline = cache.pipeline()
@@ -185,7 +185,7 @@ def reset_password_request():
     message = Message(
         "Email Request for Week in Wonderland",
         sender="weekinwonderland@csesoc.org.au",
-        recipients=[normalised],
+        recipients=[email],
         html=html
     )
 

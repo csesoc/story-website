@@ -10,6 +10,28 @@ cache = redis.Redis(host="redis", port=6379, db=0)
 
 ## EMAIL VERIFICATION
 
+def add_verification(data, code):
+    # We use a pipeline here to ensure these instructions are atomic
+    pipeline = cache.pipeline()
+
+    pipeline.hset(f"register:{code}", mapping=data)
+    pipeline.expire(f"register:{code}", timedelta(hours=1))
+
+    pipeline.execute()
+
+def get_verification(code):
+    key = f"register:{code}"
+
+    if not cache.exists(key):
+        return None
+
+    result = {}
+
+    for key, value in cache.hgetall(key).items():
+        result[key.decode()] = value.decode()
+
+    return result
+
 ## LOCKOUT
 
 def register_incorrect(id):
@@ -45,6 +67,8 @@ def block(id, time):
 def is_blocked(id):
     token = cache.get(f"block_{id}")
     return token is not None
+
+## GENERAL FUNCTIONS
 
 def clear_redis():
     cache.flushdb()

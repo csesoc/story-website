@@ -44,37 +44,7 @@ const Calendar: React.FC<{}> = () => {
 
   let nav = useNavigate();
 
-  const defaultProblems : puzzle[] = [
-    {
-      name: 'Manav is a very cool ice cube',
-      dayNum : 1,
-      pixelArtLine : '...____..._____..._______...',
-      partsInfo : [],
-    },
-    {
-      name: 'Jason is a very cool ice cube',
-      dayNum : 2,
-      pixelArtLine : '...____..._____..._______...',
-      partsInfo : [],
-    },
-    {
-      name: 'Hanh is a very cool ice cube',
-      dayNum : 3,
-      pixelArtLine : '...____..._____..._______...',
-      partsInfo : [],
-    },
-    {
-      name: 'Hanyuan is a very cool ice cube',
-      dayNum : 4,
-      pixelArtLine : '...____..._____..._______...',
-      partsInfo : [],
-    }
-  ];
-
   const defaultStatus : number[] = [0, 1, 2, -1];
-
-  const [times, setTimes] = useState(0);
-  const [showPuzzles, setShowPuzzles] = useState(defaultProblems);
   const [puzzleStatus, setPuzzleStatus] = useState(defaultStatus);
 
   useEffect(() => {
@@ -105,7 +75,6 @@ const Calendar: React.FC<{}> = () => {
           alert(body.error);
         } else {
           const puzzleList = body.puzzles;
-          setShowPuzzles(puzzleList);
           // fetchDelete(quizId, questionsList, body, setAlteredQuestion);
         }
       } catch (e) {

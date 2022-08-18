@@ -35,9 +35,9 @@ def get_stats():
     try:
         verify_jwt_in_request()
         id = get_jwt_identity()
-        competition = request.args.get('competition')
+        competition = request.get_json()['competition']
 
-        if getCompetitionQuestions(competition) == {}:
+        if getCompetitionQuestions(competition) == []:
             raise RequestError("The competition doesn't exist")
 
         # TODO: fix this function.
@@ -80,6 +80,21 @@ def set_name():
             updateUsername(username, id)
 
         return jsonify({})
+    except:
+        raise AuthError("Invalid token")
+
+"""
+@user.route("/user/reset_email/request", methods=["POST"])
+def reset_email_request():
+    data = request.get_json()
+    '''
+    {
+        token: token (in cookies)
+        email: string
+    }
+    '''
+    try:
+        verify_jwt_in_request()
     except:
         raise AuthError("Invalid token")
 
@@ -135,4 +150,4 @@ def set_name():
 # def reset_password_request():
 #     json = request.get_json()
 #     return jsonify({})
-
+"""

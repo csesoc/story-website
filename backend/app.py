@@ -9,6 +9,7 @@ from auth.jwt import update_token
 from common.plugins import jwt, mail
 from database.database import db
 from routes.auth import auth
+from routes.leaderboard import leaderboard
 from routes.puzzle import puzzle
 from routes.user import user
 
@@ -27,7 +28,7 @@ def handle_exception(error):
     return response
 
 
-def create_app():
+def create_app(config={}):
     app = Flask(__name__)
     CORS(app)
 
@@ -52,6 +53,9 @@ def create_app():
     app.config["MAIL_USE_TLS"] = True
     app.config["MAIL_USE_SSL"] = False
 
+    for key, value in config.items():
+        app.config[key] = value
+
     app.after_request(update_token)
 
     # Initialise plugins
@@ -61,6 +65,7 @@ def create_app():
     # Register smaller parts of the API
     app.register_blueprint(auth, url_prefix="/auth")
     app.register_blueprint(puzzle, url_prefix="/puzzle")
+    app.register_blueprint(leaderboard, url_prefix="/leaderboard")
     app.register_blueprint(user, url_prefix="/user")
 
     # Register our error handler

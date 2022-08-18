@@ -1,7 +1,8 @@
 import pytest
 
 # Import for pytest
-from test.helpers import clear_all, db_add_user
+from flask.testing import FlaskClient
+from test.helpers import clear_all, db_add_user, generate_csrf_header
 from test.fixtures import app, client
 
 
@@ -53,4 +54,40 @@ def test_success(client):
 
     assert response.status_code == 200
 
-    # TODO: once user profile is in, improve this test
+def test_lockout(client):
+    clear_all()
+
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+
+    # Incorrect login 3 times
+    for _ in range(3):
+        response = client.post("/auth/login", json={
+            "email": "asdfghjkl@gmail.com",
+            "password": "foobaz"
+        })
+
+        assert response.status_code == 401
+
+    # Now when we login, it should lock user out
+    response = client.post("/auth/login", json={
+        "email": "asdfghjkl@gmail.com",
+        "password": "foobar"
+    })
+
+    assert response.status_code == 401
+
+def test_protected_route(client: FlaskClient):
+    clear_all()
+
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+
+    response = client.post("/auth/login", json={
+        "email": "asdfghjkl@gmail.com",
+        "password": "foobar"
+    })
+
+    assert response.status_code == 200
+
+    response = client.post("/auth/protected", headers=generate_csrf_header(response))
+
+    assert response.status_code == 200

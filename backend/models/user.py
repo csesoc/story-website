@@ -7,9 +7,8 @@ from email_validator import validate_email, EmailNotValidError
 from itsdangerous import URLSafeTimedSerializer
 
 from common.exceptions import AuthError, InvalidError, RequestError
-from common.redis import cache
-from database.database import db
-from database.user import add_user, email_exists, fetch_user, username_exists
+from common.redis import add_verification, get_verification
+from database.user import add_user, email_exists, fetch_user, get_user_info, username_exists
 
 hasher = PasswordHasher(
     time_cost=2,
@@ -20,11 +19,13 @@ hasher = PasswordHasher(
 verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
 class User:
-    def __init__(self, id, email, username, password):
+    def __init__(self, id, email, username, password, github_username=None):
         self.id = id
         self.email = email
         self.username = username
         self.password = password
+
+        self.github_username = github_username
 
     # Helper methods
 
@@ -63,31 +64,19 @@ class User:
             "password": hashed
         }
 
-        # We use a pipeline here to ensure these instructions are atomic
-        pipeline = cache.pipeline()
-
-        pipeline.hset(f"register:{code}", mapping=data)
-        pipeline.expire(f"register:{code}", timedelta(hours=1))
-
-        pipeline.execute()
+        add_verification(data, code)
 
         return code
 
     @staticmethod
-    def register_verify(token):
-        cache_key = f"register:{token}"
+    def register_verify(code):
+        result = get_verification(code)
 
-        if not cache.exists(cache_key):
+        if result is None:
             raise AuthError("Token expired or does not correspond to registering user")
 
-        result = cache.hgetall(cache_key)
-        stringified = {}
-        
-        for key, value in result.items():
-            stringified[key.decode()] = value.decode()
-
-        id = add_user(stringified["email"], stringified["username"], stringified["password"])
-        return User(id, stringified["email"], stringified["username"], stringified["password"])
+        id = add_user(result["email"], result["username"], result["password"])
+        return User(id, result["email"], result["username"], result["password"])
 
     @staticmethod
     def login(email, password):
@@ -100,27 +89,22 @@ class User:
         result = fetch_user(normalised)
 
         try:
-            id, email, username, github, hashed = result
+            id, email, github_username, username, hashed = result
             hasher.verify(hashed, password)
         except (TypeError, VerificationError) as e:
             raise AuthError(description="Invalid email or password") from e
 
-        return User(id, email, username, hashed)
+        return User(id, email, username, hashed, github_username)
 
     @staticmethod
     def get(id):
         """Given a user's ID, fetches all of their information from the database."""
-        conn = db.getconn()
 
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM Users WHERE uid = %s", (id,))
-            fetched = cursor.fetchall()
+        result = get_user_info(id)
 
-            if fetched == []:
-                raise InvalidError(description=f"Requested user ID {id} doesn't exist")
+        if result is None:
+            raise InvalidError(description=f"Requested user ID {id} doesn't exist")
 
-            id, email, github, username, password = fetched[0]
+        id, email, github_username, username, password = result
 
-        db.putconn(conn)
-
-        return User(id, email, username, password)
+        return User(id, email, username, password, github_username)

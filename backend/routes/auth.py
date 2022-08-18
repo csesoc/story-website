@@ -1,9 +1,12 @@
 import os
 from flask import Blueprint, render_template, request, jsonify
 from flask_mail import Message
-from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
+from flask_jwt_extended import create_access_token, jwt_required, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request
+
 from common.exceptions import AuthError
 from common.plugins import mail
+from common.redis import block, calculate_time, incorrect_attempts, is_blocked, register_incorrect
+from database.user import fetch_id
 from models.user import User
 
 # Constants
@@ -11,13 +14,29 @@ from models.user import User
 auth = Blueprint("auth", __name__)
 
 # Routes (fairly temporary here)
-# TODO: add invalid login attempt protection
 
 @auth.route("/login", methods=["POST"])
 def login():
     json = request.get_json()
 
-    user = User.login(json["email"], json["password"])
+    id = fetch_id(json["email"])
+
+    if is_blocked(id):
+        raise AuthError()
+
+    try:
+        user = User.login(json["email"], json["password"])
+    except Exception as e:
+        register_incorrect(id)
+
+        attempts = incorrect_attempts(id)
+
+        if attempts >= 3:
+            block_time = calculate_time(attempts)
+            block(id, block_time)
+
+        raise e
+
     token = create_access_token(identity=user)
 
     response = jsonify({})
@@ -78,3 +97,9 @@ def logout():
     unset_jwt_cookies(response)
 
     return response, 200
+
+@jwt_required()
+@auth.route("/protected", methods=["POST"])
+def protected():
+    verify_jwt_in_request()
+    return jsonify({}), 200

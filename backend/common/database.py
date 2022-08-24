@@ -9,8 +9,6 @@ host = os.environ["POSTGRES_HOST"]
 port = os.environ["POSTGRES_PORT"]
 database = os.environ["POSTGRES_DB"]
 
-# TABLES = ["Users", "Questions", "Competitions", "Inputs", "Solves"]
-
 def get_connection():
     conn = psycopg2.connect(
         user=user,
@@ -396,4 +394,3 @@ def add_user_with_uid(uid, email, username, password):
     """
     cur.execute(query)
     conn.commit()
-

@@ -47,8 +47,3 @@ def get_cookie_from_header(response, cookie_name):
 def generate_csrf_header(response):
     csrf_token = get_cookie_from_header(response, "csrf_access_token")["csrf_access_token"]
     return {"X-CSRF-TOKEN": csrf_token}
-
-## EMAIL MOCKING
-
-def get_emails():
-    pass

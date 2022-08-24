@@ -1,18 +1,21 @@
+import os
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, create_access_token, set_access_cookies, unset_jwt_cookies, verify_jwt_in_request, get_jwt_identity
 
 # what does this do? ask Hanyuan
-from puzzles.calendar.calendar import calendar
+from puzzles.calendar import calendar
 
 import re
 
 from common.exceptions import AuthError, RequestError
-from common.database import getCompetitionQuestions, getUserStatsPerComp, updateUsername
-from database.user import username_exists
+from common.database import getCompetition, getNLeaderboard, searchLeaderboard, getRankLeaderboard
 from models.user import User
+from itsdangerous import URLSafeTimedSerializer
 
 leaderboard = Blueprint("leaderboard", __name__)
+verify_serialiser = URLSafeTimedSerializer(os.environ["FLASK_SECRET"], salt="verify")
 
+@jwt_required()
 @leaderboard.route("/entries", methods=['GET'])
 def get_leaderboard_twenty():
 
@@ -26,13 +29,50 @@ def get_leaderboard_twenty():
     #   leaderboard: score[]
     # }
 
+    competition = request.get_json()['competition']
+    if getCompetition(competition) == []:
+        raise RequestError("The competition doesn't exist")   
+
+
     try:
         verify_jwt_in_request()
-        id = get_jwt_identity()
-        pass
+
+        id = get_jwt_identity()     
+
+        prefix = request.get_json()['search']
+        returnList = []
+
+        if (prefix is None or prefix == ''):
+
+            scores = getNLeaderboard(competition, 20)
+            for (idx, score) in enumerate(scores):
+                returnList.append({
+                  "github": score[0],
+                  "username": score[1],
+                  "rank": idx + 1,
+                  "numStars": score[2],
+                  "points": score[3]
+                })
+        else: 
+            scores = searchLeaderboard(competition, prefix, 20)
+            for (idx, score) in enumerate(scores):
+                returnList.append({
+                  "github": score[0],
+                  "username": score[1],
+                  "rank": idx + 1,
+                  "numStars": score[2],
+                  "points": score[3]
+                })
+
+        ## find a way to get the stat infos, they are spread across multiple tables.
+
+        return jsonify({
+            "leaderboard": returnList
+        })
     except:
         raise AuthError("Invalid token")
 
+@jwt_required()
 @leaderboard.route("/position", methods=['GET'])
 def get_leaderboard_position():
 
@@ -44,70 +84,16 @@ def get_leaderboard_position():
     # {
     # position: integer
     # }
+    competition = request.get_json()['competition']
+    if getCompetition(competition) == []:
+        raise RequestError("The competition doesn't exist")
 
     try:
         verify_jwt_in_request()
         id = get_jwt_identity()
-        pass
+
+        return jsonify({
+            "position": getRankLeaderboard(competition, id)[0][0]
+        })
     except:
         raise AuthError("Invalid token")
-
-
-
-# example functions ############################################################################################
-
-# @user.route("/stats", methods=['GET'])
-# def get_stats():
-
-#     # Raise RequestError if competition is not valid
-
-#     try:
-#         verify_jwt_in_request()
-#         id = get_jwt_identity()
-#         competition = request.args.get('competition')
-
-#         if getCompetitionQuestions(competition) == {}:
-#             raise RequestError("The competition doesn't exist")
-
-#         stats = getUserStatsPerComp(competition, id)
-        
-#         ## find a way to get the stat infos, they are spread across multiple tables.
-
-#         return jsonify({
-#             "stats": stats
-#         })
-#     except:
-#         raise AuthError("Invalid token")
-
-# @user.route("/set_name", methods=['POST'])
-# def set_name():
-#     '''
-#     {
-#     token: token (in cookies)
-#     username: string
-#     }
-#     '''
-    
-#     try:
-#         print('hello')
-#         print('hello0')
-#         verify_jwt_in_request()
-#         print('hello1')
-#         id = get_jwt_identity()
-#         print('hello2')
-#         user_data = User.get(id)
-#         print('hello3')
-#         json = request.get_json()
-#         print('hello4')
-#         username = json["username"]
-#         print('hello5')
-
-#         # if username already in database, raise RequestError.
-#         if username_exists(username):
-#             raise RequestError(description="Username already used")
-#         else:
-#             updateUsername(username, id)
-
-#         return jsonify({})
-#     except:
-#         raise AuthError("Invalid token")

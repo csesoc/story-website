@@ -12,7 +12,7 @@ class Day(ABC):
         """
 
     @abstractmethod
-    def generate_input(self) -> str:
+    def generate_input(self, part) -> str:
         """
         Generates the input for this day's puzzle, which ideally is unique
         for each user ID. Must generate the same result every time for each

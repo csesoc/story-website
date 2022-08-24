@@ -4,12 +4,16 @@ import pytest
 from pytest_mock import mocker
 
 from test.mock.mock_mail import mailbox
+from test.mock.mock_redis import fake_redis
 
 @pytest.fixture()
 def app(mocker):
-    # Mock only where the data is being used
+    # Mock mailbox
     mocker.patch("app.mail", mailbox)
     mocker.patch("common.plugins.mail", mailbox)
+
+    # Mock redis
+    mocker.patch("common.redis.cache", fake_redis)
 
     app = create_app({"TESTING": True})
     yield app

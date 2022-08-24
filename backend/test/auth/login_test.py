@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from flask.testing import FlaskClient
 from test.helpers import clear_all, db_add_user, generate_csrf_header
 from test.fixtures import app, client
-
+from test.mock.mock_redis import fake_redis
 
 def test_no_users(client):
     clear_all()

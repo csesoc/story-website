@@ -221,7 +221,25 @@ def getAllCompetitions():
 def updateUsername(username, uid):
     query = f"""
         update Users
-        set username = {username}
+        set username = '{username}'
+        where uid = {uid};
+    """
+    cur.execute(query)
+    conn.commit()
+
+def updateEmail(email, uid):
+    query = f"""
+        update Users
+        set email = '{email}'
+        where uid = {uid};
+    """
+    cur.execute(query)
+    conn.commit()
+
+def updatePassword(password, uid):
+    query = f"""
+        update Users
+        set password = '{password}'
         where uid = {uid};
     """
     cur.execute(query)
@@ -396,4 +414,3 @@ def add_user_with_uid(uid, email, username, password):
     """
     cur.execute(query)
     conn.commit()
-

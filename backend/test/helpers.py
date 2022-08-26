@@ -32,7 +32,6 @@ def get_cookie_from_header(response, cookie_name):
 
     for header in cookie_headers:
         attributes = header.split(";")
-
         if cookie_name in attributes[0]:
             cookie = {}
 

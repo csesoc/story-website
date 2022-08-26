@@ -6,6 +6,8 @@ import re
 # Imports for pytest
 from test.helpers import clear_all, db_add_user, generate_csrf_header
 from test.fixtures import app, client
+from test.mock.mock_mail import mailbox
+from pytest_mock import mocker
 
 ## HELPER FUNCTIONS
 
@@ -17,8 +19,9 @@ def find_token(contents):
 
 ### test starts here
 
-def test_set_name(client):
+def test_password_test(client, mocker):
     clear_all()
+    mocker.patch("routes.user.mail", mailbox)
 
     db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
 
@@ -35,25 +38,21 @@ def test_set_name(client):
         "username": "asdf"
     }
 
-    change = client.post("/user/set_name", json={
-        "username": "nunu"
-    }, headers=generate_csrf_header(response))
+    before = len(mailbox.messages)
 
-    assert change.status_code == 200
+    reset = client.post("/user/reset_password/request", json={
+    },headers=generate_csrf_header(response))
+    
+    assert reset.status_code == 200
 
-    profile = client.get("/user/profile")
-    assert profile.status_code == 200
-    assert profile.json == {
-        "email": "asdfghjkl@gmail.com",
-        "username": "nunu"
-    }
+    after = len(mailbox.messages)
 
-def test_set_name_repeated(client):
+    assert after == before + 1
 
+def test_password_request_invalid_token(client, mocker):
     clear_all()
-    reused_username = "foo"
-    # Register the user in the database directly
-    db_add_user("a@gmail.com", reused_username, "bar")
+    mocker.patch("routes.user.mail", mailbox)
+
     db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
 
     response = client.post("/auth/login", json={
@@ -61,14 +60,9 @@ def test_set_name_repeated(client):
         "password": "foobar"
     })
     assert response.status_code == 200
-    profile = client.get("/user/profile")
-    assert profile.status_code == 200
-    assert profile.json == {
-        "email": "asdfghjkl@gmail.com",
-        "username": "asdf"
-    }
 
-    change = client.post("/user/set_name", json={
-        "username": reused_username
-    }, headers=generate_csrf_header(response))
-    change.status_code == 400
+    reset = client.post("/user/reset_password/request", json={
+    })
+
+    assert reset.status_code == 401
+    

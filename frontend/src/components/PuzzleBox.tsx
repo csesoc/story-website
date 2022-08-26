@@ -11,15 +11,15 @@ function PuzzleBox (puzzleInfo : puzzle) {
   const navigate = useNavigate();
 
   let numStars : number = 0;
-  for (let p of puzzleInfo.partsInfo) {
-    numStars += p.solved ? 1 : 0;
-  }
+  // for (let p of puzzleInfo.partsInfo) {
+  //   numStars += p.solved ? 1 : 0;
+  // }
 
   return (
     <>
       <div className={styles.puzzleBox}>
         <span>
-          {puzzleInfo.pixelArtLine}
+          {/* {puzzleInfo.pixelArtLine} */}
         </span>
         <span>
           {puzzleInfo.dayNum}

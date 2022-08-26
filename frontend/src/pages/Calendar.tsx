@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 import styles from "../App.module.css";
 
-import PuzzleBox from "../components/PuzzleBox";
 import calendarImgMono from "./img/calendarImageMono.png";
 import calendarImgColoured from "./img/calendarImageColoured.png";
 import starMono from "./img/starMono.png";
@@ -15,8 +14,8 @@ import { BACKEND_URI } from "src/config";
 export interface puzzle {
   name : string;
   dayNum : number;
-  pixelArtLine : string;
-  partsInfo : part[];
+  n_parts: number;
+  parts: part[];
 }
 
 export interface part {
@@ -44,8 +43,11 @@ const Calendar: React.FC<{}> = () => {
 
   let nav = useNavigate();
 
+  const defaultPuzzles : puzzle[] = [];
+
   const defaultStatus : number[] = [0, 1, 2, -1];
   const [puzzleStatus, setPuzzleStatus] = useState(defaultStatus);
+  const [puzzles, setPuzzles] = useState(defaultPuzzles);
 
   useEffect(() => {
 
@@ -53,7 +55,7 @@ const Calendar: React.FC<{}> = () => {
       const result = await fetch(`${BACKEND_URI}/verify`, )
     };
 
-    verifyToken();
+    console.log(verifyToken());
   }, []);
 
   useEffect(() => {
@@ -64,7 +66,9 @@ const Calendar: React.FC<{}> = () => {
           'Content-type': 'application/json',
           Authorization: 'insertTokenhere',
         },
-        body: undefined
+        body: JSON.stringify({
+          competition: "2022 Advent of Code"
+        })
       }
       try {
         // Note, probably need to get all questions and then delete this one manually
@@ -74,7 +78,7 @@ const Calendar: React.FC<{}> = () => {
         if (body.error) {
           alert(body.error);
         } else {
-          const puzzleList = body.puzzles;
+          setPuzzles(body.puzzles);
           // fetchDelete(quizId, questionsList, body, setAlteredQuestion);
         }
       } catch (e) {
@@ -136,7 +140,7 @@ const Calendar: React.FC<{}> = () => {
                 placement = {pos.tooltip}
                 overlay = {
                   <Popover className={styles.calendarPopover}>
-                    <Popover.Header>Day {id + 1}</Popover.Header>
+                    <Popover.Header>Day {id + 1}{(puzzles.length > id) ? ":" + puzzles[id].name : ": Not yet released"}</Popover.Header>
                     <Popover.Body className={styles.calendarPopoverBody}>
                       {
                         (puzzleStatus[id] != -1) ? <>

@@ -51,6 +51,11 @@ def register():
     
     # Fetch verification code
     code = User.register(json["email"], json["username"], json["password"])
+
+    # jason - temporarily don't do verification for testing frontend fetches
+    # User.register_verify(code)
+    # return jsonify({}), 200
+
     # TODO: convert to domain of verification page once we have its address
     url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
 

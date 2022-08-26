@@ -27,6 +27,7 @@ const Register: React.FC<{}> = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [confirm, setConfirm] = useState("");
 
   const [strength, setStrength] = useState(-1);
@@ -35,8 +36,12 @@ const Register: React.FC<{}> = () => {
     return /^([A-Za-z0-9_\-.])+@([A-Za-z0-9_\-.])+\.([A-Za-z]{2,})$/.test(email);
   };
 
+  const validUserNameFormat = () => {
+    return /^([A-Za-z0-9-]){3,}$/.test(username);
+  }
+
   const canSubmit = () => {
-    return validEmailFormat() && strength >= 3 && password === confirm;
+    return validEmailFormat() && validUserNameFormat() && strength >= 3 && password === confirm;
   };
 
   const updatePassword = (value: string) => {
@@ -53,6 +58,7 @@ const Register: React.FC<{}> = () => {
       },
       body: JSON.stringify({
         "email": email,
+        "username": username,
         "password": password
       })
     });
@@ -76,6 +82,16 @@ const Register: React.FC<{}> = () => {
             onChange={event => setEmail(event.target.value)} />
           <Form.Text className="text-danger" hidden={email === "" || validEmailFormat()}>
             Invalid email
+          </Form.Text>
+        </Form.Group>
+        <Form.Group>
+          <Form.Label>Username</Form.Label>
+          <Form.Control
+            required
+            type="text"
+            onChange={event => setUsername(event.target.value)} />
+          <Form.Text className="text-danger" hidden={username === "" || validUserNameFormat()}>
+            Username must be at least 3 characters and contain only alphanumerics and dashes 
           </Form.Text>
         </Form.Group>
         <Form.Group>

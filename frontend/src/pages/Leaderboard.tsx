@@ -10,6 +10,7 @@ export interface UserDetails {
   position: number;
   userName: string;
   userScore: number;
+  solveTime: number;
   userLink: string;
 }
 
@@ -20,18 +21,21 @@ const Leaderboard: React.FC<{}> = () => {
       position: 1,
       userName: "csesoc",
       userScore: 9999,
+      solveTime: 1660821697157,
       userLink: "https://github.com/csesoc"
     },
     {
       position: 10,
       userName: "no_github_link",
       userScore: 999,
+      solveTime: 1660821690157,
       userLink: ""
     },
     {
       position: 100,
       userName: "a-jason-liu21",
       userScore: 99,
+      solveTime: 1660821797157,
       userLink: "https://github.com/a-jason-liu21"
     }
   ]
@@ -39,6 +43,7 @@ const Leaderboard: React.FC<{}> = () => {
   const DAYS = 7;
   const OVERALL = 0;
   const [users, setUsers] = useState(defaultUsers);
+  const [usersRight, setUsersRight] = useState(defaultUsers);
   const [day, setDay] = useState(OVERALL);
 
   useEffect(() => {
@@ -56,7 +61,7 @@ const Leaderboard: React.FC<{}> = () => {
   return (
     <div className={styles.leaderboardPage}>
       <div>
-        This is the {(day === OVERALL) ? "overall leaderboard" : ("leaderboard for day " + day)} of the <span className={styles.bold}>CSESoc Unnamed Puzzle Competition 2021</span>,
+        This is the {(day === OVERALL) ? "overall leaderboard" : ("leaderboard for day " + day)} of <span className={styles.bold}>Alice in Pointerland</span>,
         which displays the users with the {(day === OVERALL) ? "highest cumulative points achieved during the contest" : "earliest submissions during the day"}.
       </div>
       <br />
@@ -77,10 +82,23 @@ const Leaderboard: React.FC<{}> = () => {
         To see the overall leaderboard, click <span className={styles.link} onClick={() => setDay(0)}>here</span>.
       </div>}
       <br />
-
-      {users.map((user: UserDetails) => {
-        return <UserProfile position={user.position} userName={user.userName} userScore={user.userScore} userLink={user.userLink}/>
-      })}
+      
+      <div className={styles.leaderboardContainer}>
+        <div className={styles.leaderboardPane}>
+          {day !== OVERALL && <span>First to achieve <span className={styles.leaderboardGold}>both stars</span>: </span>}
+          {users.map((user: UserDetails) => {
+            return <UserProfile position={user.position} userName={user.userName} userScore={(day === OVERALL) ? user.userScore : -1} solveTime={user.solveTime} userLink={user.userLink}/>
+          })}
+          <br/>
+        </div>
+        {day !== OVERALL && <div className={styles.leaderboardPane}>
+          <span>First to achieve <span className={styles.leaderboardSilver}>first star</span>: </span>
+          {usersRight.map((user: UserDetails) => {
+            return <UserProfile position={user.position} userName={user.userName} userScore={(day === OVERALL) ? user.userScore : -1} solveTime={user.solveTime} userLink={user.userLink}/>
+          })}
+        </div>}
+      </div>
+      
     </div>
   )
 };

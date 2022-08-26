@@ -6,6 +6,8 @@ import re
 # Imports for pytest
 from test.helpers import clear_all, db_add_user, generate_csrf_header
 from test.fixtures import app, client
+from test.mock.mock_mail import mailbox
+from pytest_mock import mocker
 
 ## HELPER FUNCTIONS
 
@@ -17,8 +19,9 @@ def find_token(contents):
 
 ### test starts here
 
-def test_password_test(client):
+def test_password_test(client, mocker):
     clear_all()
+    mocker.patch("routes.user.mail", mailbox)
 
     db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
 
@@ -35,10 +38,31 @@ def test_password_test(client):
         "username": "asdf"
     }
 
+    before = len(mailbox.messages)
+
     reset = client.post("/user/reset_password/request", json={
     },headers=generate_csrf_header(response))
     
     assert reset.status_code == 200
 
-def test_password_request_invalid_token(client):
-    pass
+    after = len(mailbox.messages)
+
+    assert after == before + 1
+
+def test_password_request_invalid_token(client, mocker):
+    clear_all()
+    mocker.patch("routes.user.mail", mailbox)
+
+    db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
+
+    response = client.post("/auth/login", json={
+        "email": "asdfghjkl@gmail.com",
+        "password": "foobar"
+    })
+    assert response.status_code == 200
+
+    reset = client.post("/user/reset_password/request", json={
+    })
+
+    assert reset.status_code == 401
+    

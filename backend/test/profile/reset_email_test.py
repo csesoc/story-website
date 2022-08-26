@@ -6,6 +6,8 @@ import re
 # Imports for pytest
 from test.helpers import clear_all, db_add_user, generate_csrf_header
 from test.fixtures import app, client
+from test.mock.mock_mail import mailbox
+from pytest_mock import mocker
 
 ## HELPER FUNCTIONS
 
@@ -17,8 +19,9 @@ def find_token(contents):
 
 ### test starts here
 
-def test_email_reset(client):
+def test_email_reset(client, mocker):
     clear_all()
+    mocker.patch("routes.user.mail", mailbox)
 
     db_add_user("asdfghjkl@gmail.com", "asdf", "foobar")
 
@@ -27,6 +30,8 @@ def test_email_reset(client):
         "password": "foobar"
     })
     assert response.status_code == 200
+
+    before = len(mailbox.messages)
 
     profile = client.get("/user/profile")
     assert profile.status_code == 200
@@ -41,26 +46,25 @@ def test_email_reset(client):
     
     assert reset.status_code == 200
 
-    # Check inbox
-    mailbox = poplib.POP3("pop3.mailtrap.io", 1100)
-    mailbox.user(os.environ["MAILTRAP_USERNAME"])
-    mailbox.pass_(os.environ["MAILTRAP_PASSWORD"])
+    after = len(mailbox.messages)
 
-    # Check the contents of the email, and harvest the token from there
-    raw_email = b"\n".join(mailbox.retr(1)[1])
-    parsed_email = email.message_from_bytes(raw_email)
+    assert after == before + 1
+
+    # Verify recipient
+    parsed_email = mailbox.get_message(-1)
+
+    assert parsed_email["To"] == "numail@gmail.com"
 
     # Assuming there's a HTML part
     for part in parsed_email.walk():
         if part.get_content_type() == "text/html":
             content = part.get_payload()
-
     # Extract the token from the HTML
     token = find_token(content)
 
     response = client.post("/user/reset_email/reset", json={
         "reset_code": token,
-    })
+    },headers=generate_csrf_header(response))
 
     assert response.status_code == 200
     profile = client.get("/user/profile")

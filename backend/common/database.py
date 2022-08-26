@@ -221,7 +221,7 @@ def getAllCompetitions():
 def updateUsername(username, uid):
     query = f"""
         update Users
-        set username = {username}
+        set username = '{username}'
         where uid = {uid};
     """
     cur.execute(query)
@@ -230,7 +230,7 @@ def updateUsername(username, uid):
 def updateEmail(email, uid):
     query = f"""
         update Users
-        set email = {email}
+        set email = '{email}'
         where uid = {uid};
     """
     cur.execute(query)
@@ -239,7 +239,7 @@ def updateEmail(email, uid):
 def updatePassword(password, uid):
     query = f"""
         update Users
-        set password = {password}
+        set password = '{password}'
         where uid = {uid};
     """
     cur.execute(query)

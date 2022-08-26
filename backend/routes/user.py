@@ -93,28 +93,25 @@ def reset_email_request():
         verify_jwt_in_request()
     except:
         raise AuthError("Invalid token")
-    print("pingas")
+        
     try:
         normalised = validate_email(json['email']).email
     except EmailNotValidError as e:
         raise RequestError(description="Invalid email") from e
-    id = get_jwt_identity()
-    print("pingas2")
-    # user_data = User.get(id)
 
     code = verify_serialiser.dumps(normalised)
     data = {
         "email": normalised,
     }
-    print("pingas3")
     # We use a pipeline here to ensure these instructions are atomic
     pipeline = cache.pipeline()
     pipeline.hset(f"email_reset_code:{code}", mapping=data)
     pipeline.expire(f"email_reset_code:{code}", timedelta(hours=1))
     pipeline.execute()
-    print("pingas4")
+
     url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
     html = render_template("email_request.html", reset_code=url)
+
     # Send it over to email
     message = Message(
         "Email Request for Week in Wonderland",
@@ -122,16 +119,14 @@ def reset_email_request():
         recipients=[normalised],
         html=html
     )
-    print("pingas5")
+    message.body = f"Your email reset code is: {code}"
 
     mail.send(message)
-
-    print("pingas5")
-
     response = jsonify({})
 
     return response, 200
-    
+
+@jwt_required()
 @user.route("/reset_email/reset", methods=['POST'])
 def reset_email():
     json = request.get_json()
@@ -153,6 +148,7 @@ def reset_email():
     response = jsonify({})
     return response, 200
 
+@jwt_required()
 @user.route("/reset_password/request", methods=["POST"])
 def reset_password_request():
     '''
@@ -179,7 +175,7 @@ def reset_password_request():
     pipeline.execute()
 
     url = f"{os.environ['TESTING_ADDRESS']}/verify/{code}"
-    html = render_template("email_request.html", reset_code=url)
+    html = render_template("password_request.html", reset_code=url)
 
     # Send it over to email
     message = Message(
@@ -193,6 +189,7 @@ def reset_password_request():
     response = jsonify({})
     return response, 200
 
+@jwt_required()
 @user.route("/reset_password/reset", methods=["POST"])
 def reset_password():
     '''
@@ -202,26 +199,20 @@ def reset_password():
         password: string
     }
     '''
+    json = request.get_json()
     try:
         verify_jwt_in_request()
         id = get_jwt_identity()
     except:
         raise AuthError("Invalid token")
-
-    json = request.get_json()
-
-    #user_data = User.get(id)
-
-    cache_key = f"email_reset_code:{json['reset_code']}"
+    cache_key = f"password_reset_code:{json['reset_code']}"
     if not cache.exists(cache_key):
         raise AuthError("Reset code expired or does not correspond to registering user")
     result = cache.hgetall(cache_key)
-    
-    '''    for key, value in result.items():
-        stringified[key.decode()] = value.decode()
-    updateEmail(stringified["email"], id)'''
 
-    updatePassword(json["password"], id)
+    hashed = User.hash_password(json["password"])
+
+    updatePassword(hashed, id)
 
     response = jsonify({})
     return response, 200

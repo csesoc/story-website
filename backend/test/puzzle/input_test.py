@@ -19,7 +19,7 @@ def test_no_part(client):
     qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
-    response = client.get("/puzzle/input", json={
+    response = client.get("/puzzle/input", param={
         "competition": "2022 Advent of Code",
         "dayNum": 1,
         "part": 10000
@@ -37,7 +37,7 @@ def test_unique_input(client):
         "password": "foobar"
     })
 
-    response1 = client.get("/puzzle/input", json={
+    response1 = client.get("/puzzle/input", param={
         "competition": "2022 Advent of Code",
         "dayNum": 1,
         "part": 1
@@ -54,7 +54,7 @@ def test_unique_input(client):
     qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
-    response2 = client.get("/puzzle/input", json={
+    response2 = client.get("/puzzle/input", param={
         "competition": "2022 Advent of Code",
         "dayNum": 1,
         "part": 1

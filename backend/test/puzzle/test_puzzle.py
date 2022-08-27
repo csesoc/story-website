@@ -5,8 +5,6 @@ from test.helpers import clear_all, db_add_user
 from test.fixtures import app, client
 
 
-# Example test
-
 # def test_no_users(client):
 #     clear_all()
 

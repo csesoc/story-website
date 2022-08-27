@@ -19,7 +19,7 @@ def test_no_competition(client):
     qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
-    response = client.get("/puzzle/all", json={
+    response = client.get("/puzzle/all", params={
         "competition": "Birds can't fly"
     })
 
@@ -41,7 +41,7 @@ def test_puzzle_all(client):
     qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
-    response = client.get("/puzzle/all", json={
+    response = client.get("/puzzle/all", params={
         "competition": "2022 Advent of Code"
     })
 
@@ -64,7 +64,7 @@ def test_puzzle_no_day(client):
     qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
-    response = client.get("/puzzle/details", json={
+    response = client.get("/puzzle/details", parms={
         "competition": "2022 Advent of Code",
         "dayNum": 10000
     })
@@ -85,7 +85,7 @@ def test_puzzle_details(client):
     qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
-    response = client.get("/puzzle/details", json={
+    response = client.get("/puzzle/details", param={
         "competition": "2022 Advent of Code",
         "dayNum": 1
     })

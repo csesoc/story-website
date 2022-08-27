@@ -19,7 +19,7 @@ def test_solve_correct(client):
     qid = db_add_question(cid, "day 1", 1, 1)
     db_add_part(qid, 1)
 
-    response = client.get("/puzzle/input", json={
+    response = client.get("/puzzle/input", params={
         "competition": "2022 Advent of Code",
         "dayNum": 1,
         "part": 1

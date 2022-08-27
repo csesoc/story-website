@@ -1,3 +1,4 @@
+from inspect import ArgSpec
 from xml.sax.handler import all_properties
 from common.exceptions import RequestError, AuthError
 from flask import Blueprint, jsonify, request
@@ -31,7 +32,7 @@ def description():
 def puzzle_all():
     id = getID()
 
-    competition = request.get_json()["competition"]
+    competition = request.args.get("competitions")
     try:
         days = calendar[competition]
     except:
@@ -50,8 +51,8 @@ def puzzle_all():
 @puzzle.route("/details", methods=["GET"])
 def puzzle_details():
     id = getID()
-    competition = str(request.get_json()["competition"])
-    dayNum = int(request.get_json()["dayNum"])
+    competition = str(request.args.get("competitions"))
+    dayNum = int(request.args.get("dayNum"))
 
     try:
         days = calendar[competition]
@@ -73,9 +74,9 @@ def puzzle_details():
 def puzzle_input():
     id = getID()
 
-    competition = str(request.get_json()["competition"])
-    dayNum = int(request.get_json()["dayNum"])
-    part = str(request.get_json()["part"])
+    competition = str(request.args.get("competitions"))
+    dayNum = int(request.args.get("dayNum"))
+    part = int(request.args.get("part"))
 
     try:
         days = calendar[competition]

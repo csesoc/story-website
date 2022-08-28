@@ -3,6 +3,7 @@ import { Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 import { BACKEND_URI } from "src/config";
+import styles from "../App.module.css";
 
 const getCookieValue = (name: string) => (
   document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || ''
@@ -41,7 +42,7 @@ const Login: React.FC<{}> = () => {
   };
 
   return (
-    <>
+    <div className={styles.authPage}>
       <Form>
         <Form.Group>
           <Form.Label>Email address</Form.Label>
@@ -57,14 +58,23 @@ const Login: React.FC<{}> = () => {
             type="password"
             onChange={event => setPassword(event.target.value)} />
         </Form.Group>
-        <Button
-          variant="primary"
-          onClick={() => login()}
-          disabled={!validEmailFormat() || password === ""}>
-          Submit
-        </Button>
+        <br/>
+        <Form.Group>
+          <Button
+            variant="primary"
+            onClick={() => login()}
+            disabled={!validEmailFormat() || password === ""}>
+            Submit
+          </Button>
+          <Button
+            variant="link"
+            type="button"
+            onClick={() => navigate("/2022/auth/register")}>
+            Register
+          </Button>  
+          </Form.Group>
       </Form>
-    </>
+    </div>
   );
 };
 

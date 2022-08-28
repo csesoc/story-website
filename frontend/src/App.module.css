@@ -46,6 +46,7 @@ body {
   text-align: center;
   white-space: nowrap;
   display: inline-block;
+  cursor: pointer;
 }
 
 .navYear {
@@ -234,4 +235,11 @@ body {
   width: 20px;
   height: auto;
   padding: 0px 4px 4px 4px;
+}
+
+/* --------------------------------------------------------- LOGIN/REGISTER PAGE STYLES ---------------------------------------------------*/
+
+.authPage {
+  padding: 20px;
+  width: 60%;
 }

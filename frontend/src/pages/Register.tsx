@@ -8,6 +8,8 @@ import zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
 import zxcvbnEnPackage from "@zxcvbn-ts/language-en";
 
 import { BACKEND_URI } from "src/config";
+import styles from "../App.module.css";
+
 import PasswordStrength from "src/components/register/PasswordStrength";
 
 // Set up zxcvbn
@@ -72,7 +74,7 @@ const Register: React.FC<{}> = () => {
   };
 
   return (
-    <>
+    <div className={styles.authPage}>
       <Form>
         <Form.Group>
           <Form.Label>Email address</Form.Label>
@@ -100,9 +102,10 @@ const Register: React.FC<{}> = () => {
             required
             type="password"
             onChange={event => updatePassword(event.target.value)} />
-          <PasswordStrength strength={strength} />
-          <Form.Text className="text-danger" hidden={password === "" || strength >= 3}>
-            Password too weak
+          <PasswordStrength strength={(password === "") ? -1 : strength} />
+          <br/>
+          <Form.Text className="text-danger">
+            {(password === "" || strength >= 3) ? " " : "Password too weak"} 
           </Form.Text>
         </Form.Group>
         <Form.Group>
@@ -115,14 +118,23 @@ const Register: React.FC<{}> = () => {
             Passwords do not match
           </Form.Text>
         </Form.Group>
-        <Button
-          variant="primary"
-          onClick={() => register()}
-          disabled={!canSubmit()}>
-          Submit
-        </Button>
+        <br/>
+        <Form.Group>
+          <Button
+            variant="primary"
+            onClick={() => register()}
+            disabled={!canSubmit()}>
+            Submit
+          </Button>
+          <Button
+            variant="link"
+            type="button"
+            onClick={() => navigate("/2022/auth/login")}>
+            Return to login
+          </Button>
+        </Form.Group>
       </Form>
-    </>
+    </div>
   );
 };
 

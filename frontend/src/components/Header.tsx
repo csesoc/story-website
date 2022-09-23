@@ -7,6 +7,17 @@ const Header: React.FC<{}> = () => {
 
   const navigate = useNavigate();
 
+  const [loginState, setLoginState] = useState(false);
+
+  const logout = () => {
+    // Call logout route in backend
+    navigate("/");
+  }
+  
+  useEffect(() => {
+    // Detect whether user is logged in here D:
+  }, []);
+
   return (
     <>
       <nav className={styles.horizontalFlex}>
@@ -14,11 +25,14 @@ const Header: React.FC<{}> = () => {
           <a href="https://www.csesoc.unsw.edu.au/"> <img src={csesocLogo} alt="csesoc logo" className={styles.csesocLogo}></img> </a>
         </div>
         <div className={styles.horizontalFlex}>
-          <a className={styles.navElem} href="/2022/about">[About]</a> 
-          <a className={styles.navElem} href="/2022/auth/login">[Log In]</a> 
-          <a className={styles.navElem} href="/2022/calendar">[Calendar]</a> 
-          <a className={styles.navElem} href="/2022/leaderboard">[Leaderboard]</a> 
-          <a className={styles.navElem} href="/2022/stats">[Stats]</a> 
+          <span className={styles.navElem} onClick={() => navigate("/2022/calendar")}>[Calendar]</span> 
+          <span className={styles.navElem} onClick={() => navigate("/2022/leaderboard")}>[Leaderboard]</span> 
+          <span className={styles.navElem} onClick={() => navigate("/2022/stats")}>[Stats]</span> 
+          <span className={styles.navElem} onClick={() => navigate("/2022/about")}>[About]</span> 
+          {(loginState) 
+            ? <span className={styles.navElem} onClick={logout}>[Log Out]</span>
+            : <span className={styles.navElem} onClick={() => navigate("/2022/auth/login")}>[Log In / Register]</span>
+          }
           <div className={styles.navYear}>
             {"{"}Year={">"}<span className={styles.yearDisplay} onClick={() => navigate("/2022/")}>2022</span>{"}"}
           </div>

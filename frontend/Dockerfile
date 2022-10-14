@@ -1,7 +1,7 @@
 ## BASE IMAGE
 
 # pulling official base image
-FROM node:17.9-alpine AS base
+FROM node:18.11-alpine AS base
 
 # Setting working directory
 WORKDIR /frontend

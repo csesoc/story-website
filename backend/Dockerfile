@@ -1,7 +1,7 @@
 ## BASE BUILD THAT BOTH DEV AND PROD INHERIT FROM
 
 # pull official base image
-FROM python:3.8.10-slim-buster AS base
+FROM python:3.11.4-slim-buster AS base
 
 # set work directory
 WORKDIR /backend
